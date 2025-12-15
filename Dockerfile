@@ -1,6 +1,9 @@
 # Dockerfile para el frontend
 FROM node:22-alpine
 
+# Instalar wget para healthcheck
+RUN apk add --no-cache wget
+
 WORKDIR /app
 
 # Copiar archivos de dependencias

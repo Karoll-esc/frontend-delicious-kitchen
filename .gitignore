@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Firebase
+firebase-debug.log
+.firebase/
+serviceAccountKey.json
+serviceAccountKey.cjs
+
+# Testing
+coverage/
+*.log
+
+# Build / Vite
+dist/
+dist-ssr/
+build/
+
+# Vite
+.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Reports
+*.html
+audit.md
+informe_frontend.md
+INFORME_PROYECTO.md
+TEST_AUDIT.md
