@@ -4,9 +4,9 @@ import { createUser, getUsers, updateUser, deleteUser } from "./usersService";
 import { useNavigate, useParams } from "react-router-dom";
 
 const roles = [
-  { label: "Admin", value: "ADMIN" },
-  { label: "Kitchen", value: "KITCHEN" },
-  { label: "Waiter", value: "WAITER" },
+  { label: "Admin", value: "ADMIN", labelKey: "roles.ADMIN" },
+  { label: "Kitchen", value: "KITCHEN", labelKey: "roles.KITCHEN" },
+  { label: "Waiter", value: "WAITER", labelKey: "roles.WAITER" },
 ];
 
 const initialState = {
