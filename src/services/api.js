@@ -361,9 +361,10 @@ export async function createOrder(orderData) {
 /**
  * Cancela un pedido específico
  * @param {string} orderId - ID del pedido a cancelar
+ * @param {string} reason - Motivo de cancelación (opcional)
  * @returns {Promise<Object>} Datos del pedido actualizado
  */
-export async function cancelOrder(orderId) {
+export async function cancelOrder(orderId, reason = 'Cancelado por el cliente') {
   try {
     const url = `${API_BASE_URL}/orders/${orderId}/cancel`;
     const response = await fetch(url, {
@@ -371,6 +372,10 @@ export async function cancelOrder(orderId) {
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        reason,
+        cancelledBy: 'customer'
+      })
     });
 
     if (!response.ok) {

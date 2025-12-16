@@ -28,7 +28,9 @@
     "title": "Cancelar pedido",
     "confirmMessage": "¿Estás seguro de que deseas cancelar este pedido? Esta acción no se puede deshacer.",
     "keepOrder": "No, mantener pedido",
-    "cancelOrder": "Sí, cancelar pedido"
+    "cancelOrder": "Sí, cancelar pedido",
+    "reasonLabel": "Motivo de cancelación (opcional)",
+    "reasonPlaceholder": "Ej: Cambié de opinión, encontré otra opción..."
   },
   "orderStatus": {
     "orderNumber": "Pedido #{{id}}",
@@ -57,7 +59,11 @@
     "infoPreparing": "Nuestros chefs están preparando tu pedido con cuidado.",
     "infoReady": "Tu pedido está listo y esperándote en el mostrador.",
     "infoDelivered": "Esperamos que hayas disfrutado tu comida. ¡Gracias por elegirnos!",
-    "trackOrder": "Rastrear pedido"
+    "trackOrder": "Rastrear pedido",
+    "cannotCancelPreparing": "No puedes cancelar este pedido porque ya está siendo preparado por la cocina.",
+    "cannotCancelReady": "No puedes cancelar este pedido porque ya está listo para recoger.",
+    "cannotCancelCompleted": "Este pedido ya fue completado y no puede cancelarse.",
+    "cancelOrderAriaLabel": "Cancelar este pedido"
   },
   "notification": {
     "defaultTitle": "Notificación",

@@ -1,6 +1,7 @@
 /**
  * Modal para confirmar la cancelación de un pedido
  */
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function OrderCancelModal({
@@ -11,7 +12,19 @@ export default function OrderCancelModal({
   onClose
 }) {
   const { t } = useTranslation();
+  const [reason, setReason] = useState('');
+
   if (!isOpen) return null;
+
+  const handleConfirm = () => {
+    onConfirm(reason || 'Cancelado por el cliente');
+    setReason('');
+  };
+
+  const handleClose = () => {
+    onClose();
+    setReason('');
+  };
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
@@ -29,9 +42,29 @@ export default function OrderCancelModal({
         </h3>
 
         {/* Mensaje */}
-        <p className="text-gray-600 dark:text-gray-300 mb-6">
+        <p className="text-gray-600 dark:text-gray-300 mb-4">
           {t('orderCancelModal.confirmMessage')}
         </p>
+
+        {/* Campo de razón opcional */}
+        <div className="w-full mb-4">
+          <label 
+            htmlFor="cancelReason" 
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-left"
+          >
+            {t('orderCancelModal.reasonLabel')}
+          </label>
+          <textarea
+            id="cancelReason"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            disabled={isCancelling}
+            placeholder={t('orderCancelModal.reasonPlaceholder')}
+            maxLength={200}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-800 dark:text-white resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+          />
+        </div>
 
         {/* Mensaje de error si existe */}
         {error && (
@@ -43,14 +76,14 @@ export default function OrderCancelModal({
         {/* Botones */}
         <div className="w-full flex gap-3">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isCancelling}
             className="flex-1 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('orderCancelModal.keepOrder')}
           </button>
           <button
-            onClick={onConfirm}
+            onClick={handleConfirm}
             disabled={isCancelling}
             className="flex-1 bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >

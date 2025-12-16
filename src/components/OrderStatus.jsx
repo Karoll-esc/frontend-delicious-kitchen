@@ -96,11 +96,11 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
   useNotifications(handleNotification, []);
 
   // --- Acciones de UI ---
-  const handleCancelOrder = useCallback(async () => {
+  const handleCancelOrder = useCallback(async (reason) => {
     setCancelError('');
     setIsCancelling(true);
     try {
-      const updatedOrder = await cancelOrder(orderId);
+      const updatedOrder = await cancelOrder(orderId, reason);
       setOrder(updatedOrder);
       setCancelModal(false);
       setPreparingModal(false);
@@ -276,6 +276,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
           <button
             onClick={() => setCancelModal(true)}
             disabled={isCancelling}
+            aria-label={t('orderStatus.cancelOrderAriaLabel')}
             className="px-6 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
             {isCancelling ? t('orderStatus.cancelling') : t('orderStatus.cancelOrder')}
@@ -283,13 +284,13 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
         </div>
       )}
 
-      {/* Mensaje informativo para otros estados */}
+      {/* Mensaje informativo para estados no cancelables */}
       {!isCustomerCancellable(order.status) && !isCancelled && (
         <div className="mt-6 flex justify-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {order.status === ORDER_STATUS.PREPARING ? t('orderStatus.infoPreparing') : ''}
-            {order.status === ORDER_STATUS.READY ? t('orderStatus.infoReady') : ''}
-            {order.status === ORDER_STATUS.COMPLETED ? t('orderStatus.infoDelivered') : ''}
+          <p className="text-sm text-yellow-600 dark:text-yellow-600 text-center max-w-md">
+            {order.status === ORDER_STATUS.PREPARING && t('orderStatus.cannotCancelPreparing')}
+            {order.status === ORDER_STATUS.READY && t('orderStatus.cannotCancelReady')}
+            {order.status === ORDER_STATUS.COMPLETED && t('orderStatus.cannotCancelCompleted')}
           </p>
         </div>
       )}
