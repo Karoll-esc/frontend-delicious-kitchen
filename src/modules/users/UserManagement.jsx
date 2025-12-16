@@ -4,6 +4,8 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { deactivateUser } from "./usersService";
+import { getRoleTranslation } from "../../utils/roleTranslations";
+import { VALID_ROLES } from "../../constants/roles";
 
 import DefaultUserAvatar from "./DefaultUserAvatar";
 import Pagination from "./Pagination";
@@ -46,7 +48,7 @@ const UserManagement = () => {
 
   const navigate = useNavigate();
   // Obtener roles y estados únicos
-  const allRoles = Array.from(new Set(users.map(u => u.role || u.customClaims?.role || '').filter(Boolean)));
+  const allRoles = VALID_ROLES;
   const allStatuses = Array.from(new Set(users.map(u => u.status || 'Active')));
 
   // Filtrar usuarios por nombre/correo, rol y estado
@@ -116,7 +118,7 @@ const UserManagement = () => {
                 >
                   <option value="">{t('users.role', 'Rol')}</option>
                   {allRoles.map(role => (
-                    <option key={role} value={role}>{role}</option>
+                    <option key={role} value={role}>{getRoleTranslation(role.toUpperCase(), t)}</option>
                   ))}
                 </select>
                 {/* Filtro por estado */}
@@ -168,7 +170,9 @@ const UserManagement = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">{user.email}</td>
-                          <td className="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">{user.role || user.customClaims?.role || "-"}</td>
+                          <td className="px-6 py-4 text-[#8d6a5e] dark:text-gray-400 text-sm font-normal">
+                            {getRoleTranslation((user.role || user.customClaims?.role || "").toUpperCase(), t) || "-"}
+                          </td>
                           <td className="px-6 py-4">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[user.status || "Active"]}`}>{user.status || "Active"}</span>
                           </td>

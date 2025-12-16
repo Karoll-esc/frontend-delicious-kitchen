@@ -316,5 +316,10 @@
       "submitFailed": "Error al enviar la reseña",
       "submitFailedRetry": "Error al enviar la reseña. Por favor intenta de nuevo."
     }
+  },
+  "roles": {
+    "ADMIN": "Administrador",
+    "KITCHEN": "Cocina",
+    "WAITER": "Mesero"
   }
 }
