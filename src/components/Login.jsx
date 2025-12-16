@@ -102,14 +102,13 @@ function Login() {
    * 
    * @param {string} email - Email del usuario
    * @param {string} password - Contraseña del usuario
-   * @returns {Promise<Object>} Objeto con user y tokenResult
+   * @returns {Promise<Object>} Token result con claims del usuario
    */
   const authenticateUser = async (email, password) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    const tokenResult = await user.getIdTokenResult(true);
+    const tokenResult = await userCredential.user.getIdTokenResult(true);
     
-    return { user, tokenResult };
+    return tokenResult;
   };
 
   /**
@@ -125,7 +124,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const { user, tokenResult } = await authenticateUser(email, password);
+      const tokenResult = await authenticateUser(email, password);
       const isAllowed = validateAllowedRole(tokenResult.claims);
 
       if (isAllowed) {

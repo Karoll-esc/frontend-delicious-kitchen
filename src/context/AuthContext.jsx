@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
  * @property {boolean} loading - Indica si se está verificando la sesión inicial
  * @property {Function} logout - Función para cerrar sesión y limpiar estado
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext({
   isLoggedIn: false,
   user: null,
@@ -120,6 +121,98 @@ export function AuthProvider({ children }) {
     // Cleanup: remover listener al desmontar
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [t]);
+
+  useEffect(() => {
+    /**
+     * Auto-renovación proactiva del token antes de expirar (HU-012 TC-012-B01).
+     * 
+     * Firebase ID Tokens tienen duración fija de 1 hora (3600 segundos).
+     * Este efecto programa una renovación automática 5 minutos antes de expirar
+     * para evitar que el usuario pierda trabajo por sesión expirada.
+     * 
+     * Estrategia:
+     * - Token expira a los 60 minutos
+     * - Renovamos a los 55 minutos (300 segundos antes)
+     * - getIdToken(true) fuerza refresh con Firebase Auth
+     * - Proceso es transparente para el usuario
+     * 
+     * Casos de uso:
+     * - TC-012-B01: Renovación automática 5 min antes de expirar
+     * - TC-012-P02: Usuario trabaja 55 min sin desconexión
+     */
+    let refreshTimerId = null;
+
+    const scheduleTokenRefresh = async () => {
+      try {
+        const firebaseUser = auth.currentUser;
+        
+        if (!firebaseUser) {
+          return; // No hay usuario, no programar refresh
+        }
+
+        // Obtener token actual y extraer tiempo de expiración
+        const tokenResult = await firebaseUser.getIdTokenResult(false);
+        const expirationTime = new Date(tokenResult.expirationTime).getTime();
+        const currentTime = Date.now();
+        
+        // Calcular tiempo hasta expiración
+        const timeUntilExpiration = expirationTime - currentTime;
+        
+        // Programar refresh 5 minutos (300,000 ms) antes de expirar
+        const FIVE_MINUTES_MS = 5 * 60 * 1000;
+        const timeUntilRefresh = timeUntilExpiration - FIVE_MINUTES_MS;
+
+        // Solo programar si faltan más de 5 minutos
+        if (timeUntilRefresh > 0) {
+          console.log(`[Token Refresh] Programado para dentro de ${Math.round(timeUntilRefresh / 1000 / 60)} minutos`);
+          
+          refreshTimerId = setTimeout(async () => {
+            try {
+              console.log('[Token Refresh] Renovando token...');
+              
+              // Forzar refresh del token
+              await firebaseUser.getIdToken(true);
+              
+              console.log('[Token Refresh] Token renovado exitosamente');
+              
+              // Re-programar siguiente refresh
+              scheduleTokenRefresh();
+            } catch (refreshError) {
+              console.error('[Token Refresh] Error al renovar token:', refreshError);
+              // Si falla el refresh, el usuario será redirigido al login en el próximo request
+            }
+          }, timeUntilRefresh);
+        } else {
+          // Token ya está próximo a expirar o expirado
+          console.warn('[Token Refresh] Token expira en menos de 5 minutos, renovando ahora...');
+          
+          try {
+            await firebaseUser.getIdToken(true);
+            console.log('[Token Refresh] Token renovado inmediatamente');
+            // Re-programar siguiente refresh
+            scheduleTokenRefresh();
+          } catch (refreshError) {
+            console.error('[Token Refresh] Error al renovar token inmediatamente:', refreshError);
+          }
+        }
+      } catch (error) {
+        console.error('[Token Refresh] Error al programar renovación:', error);
+      }
+    };
+
+    // Programar refresh cuando haya usuario autenticado
+    if (isLoggedIn && user) {
+      scheduleTokenRefresh();
+    }
+
+    // Cleanup: cancelar timer al desmontar o cuando cambie estado de autenticación
+    return () => {
+      if (refreshTimerId) {
+        clearTimeout(refreshTimerId);
+        console.log('[Token Refresh] Timer cancelado');
+      }
+    };
+  }, [isLoggedIn, user]);
 
   /**
    * Limpia todas las keys de sesión en localStorage excepto preferencias de usuario.
