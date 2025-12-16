@@ -1,15 +1,19 @@
 /**
  * Utility para realizar peticiones HTTP autenticadas con token de Firebase
  * Agrega automáticamente el token JWT al header Authorization
+ * Maneja errores 401 redirigiendo al login cuando el token expira
  */
 
 import { auth } from '../firebaseConfig';
 
 /**
- * Realiza una petición fetch autenticada con el token de Firebase
+ * Realiza una petición fetch autenticada con el token de Firebase.
+ * Maneja automáticamente errores 401 (token expirado/inválido) redirigiendo al login.
+ * 
  * @param {string} url - URL completa del endpoint
  * @param {Object} options - Opciones de fetch (method, body, headers, etc.)
  * @returns {Promise<Response>} Response de fetch
+ * @throws {Error} Si la petición falla o el token es inválido
  */
 export async function authenticatedFetch(url, options = {}) {
   try {
@@ -38,6 +42,22 @@ export async function authenticatedFetch(url, options = {}) {
       ...options,
       headers,
     });
+
+    // Manejo de error 401: token expirado o inválido
+    if (response.status === 401) {
+      console.warn('Token expirado o inválido (401). Redirigiendo al login...');
+      
+      // Cerrar sesión en Firebase
+      await auth.signOut();
+      
+      // Limpiar localStorage
+      localStorage.removeItem('user');
+      
+      // Redirigir al login
+      window.location.href = '/login';
+      
+      throw new Error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente');
+    }
 
     return response;
   } catch (error) {

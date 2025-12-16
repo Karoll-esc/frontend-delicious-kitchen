@@ -1,10 +1,12 @@
 /**
  * Servicio API para comunicación con el backend
  * Base URL configurada mediante VITE_API_URL en .env
+ * Utiliza authenticatedFetch para incluir tokens de Firebase automáticamente
  */
 
 import { getEnvVar } from '../utils/getEnvVar';
 import { normalizeOrderStatus } from '../constants/orderStates';
+import { authenticatedFetch } from '../utils/authenticatedFetch';
 
 const API_BASE_URL = getEnvVar('VITE_API_URL');
 
@@ -41,11 +43,8 @@ function normalizeOrderData(orderData) {
  */
 export async function getOrderStatus(orderId) {
   try {
-    const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+    const response = await authenticatedFetch(`${API_BASE_URL}/orders/${orderId}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -73,11 +72,8 @@ export async function getKitchenOrders(status) {
 
 
 
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -154,11 +150,8 @@ export async function getKitchenOrders(status) {
 export async function getKitchenOrder(orderId) {
   try {
     const url = `${API_BASE_URL}/kitchen/orders/${orderId}`;
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -207,11 +200,8 @@ export async function getKitchenOrder(orderId) {
 export async function startPreparingOrder(orderId) {
   try {
     const url = `${API_BASE_URL}/kitchen/orders/${orderId}/start-preparing`;
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -260,11 +250,8 @@ export async function startPreparingOrder(orderId) {
 export async function markOrderAsReady(orderId) {
   try {
     const url = `${API_BASE_URL}/kitchen/orders/${orderId}/ready`;
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {

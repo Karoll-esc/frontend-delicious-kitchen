@@ -321,5 +321,23 @@
     "ADMIN": "Administrador",
     "KITCHEN": "Cocina",
     "WAITER": "Mesero"
+  },
+  "auth": {
+    "errors": {
+      "wrongPassword": "Credenciales inválidas. Verifica tu email y contraseña",
+      "userNotFound": "No existe una cuenta con ese email",
+      "userDisabled": "Tu cuenta ha sido deshabilitada. Contacta al administrador",
+      "tooManyRequests": "Demasiados intentos fallidos. Intenta más tarde",
+      "invalidEmail": "El formato del email es inválido",
+      "emailInUse": "Ya existe una cuenta con este email",
+      "weakPassword": "La contraseña debe tener al menos 6 caracteres",
+      "operationNotAllowed": "Esta operación no está permitida",
+      "invalidCredentials": "Credenciales inválidas. Verifica tu email y contraseña",
+      "networkError": "Error de conexión. Verifica tu conexión a internet",
+      "popupClosed": "La ventana de autenticación fue cerrada",
+      "popupCancelled": "La autenticación fue cancelada",
+      "requiresRecentLogin": "Por seguridad, debes iniciar sesión nuevamente",
+      "generic": "Error de autenticación. Por favor intenta nuevamente"
+    }
   }
 }

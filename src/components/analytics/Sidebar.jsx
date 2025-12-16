@@ -1,19 +1,21 @@
 
 
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../../context/AuthContext.jsx';
 
 /**
  * Componente de navegación lateral (Sidebar)
- * Muestra menú de navegación principal de la aplicación
+ * Muestra menú de navegación principal de la aplicación con logout seguro
  */
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, i18n } = useTranslation();
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const handleLanguageChange = (e) => {
     i18n.changeLanguage(e.target.value);
     // Forzar re-render de la página actual para que el contenido cambie de idioma inmediatamente
@@ -21,6 +23,25 @@ function Sidebar() {
     // Si usas React Router v6, puedes forzar un re-render usando navigate(0) o navigate(location.pathname, {replace: true})
     // Aquí usamos navigate(location.pathname, {replace: true}) para recargar la ruta actual
     navigate(location.pathname, { replace: true });
+  };
+
+  /**
+   * Maneja el cierre de sesión seguro del usuario.
+   * Ejecuta logout del AuthContext que cierra sesión en Firebase y limpia localStorage.
+   * Redirige a /login después de cerrar sesión exitosamente.
+   */
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      // El AuthContext limpiará el estado automáticamente via onAuthStateChanged
+      navigate('/login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      alert('Error al cerrar sesión. Por favor intenta nuevamente.');
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   // Define allowed menu items by role
@@ -100,11 +121,14 @@ function Sidebar() {
             </select>
           </button>
           <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-3 px-3 py-2 text-[#111813] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="flex items-center gap-3 px-3 py-2 text-[#111813] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined text-2xl">logout</span>
-            <p className="text-sm font-medium leading-normal">Logout</p>
+            <p className="text-sm font-medium leading-normal">
+              {isLoggingOut ? 'Cerrando sesión...' : 'Logout'}
+            </p>
           </button>
         </div>
       </div>

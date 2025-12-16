@@ -309,5 +309,23 @@
     "ADMIN": "Admin",
     "KITCHEN": "Kitchen",
     "WAITER": "Waiter"
+  },
+  "auth": {
+    "errors": {
+      "wrongPassword": "Invalid credentials. Check your email and password",
+      "userNotFound": "No account exists with that email",
+      "userDisabled": "Your account has been disabled. Contact the administrator",
+      "tooManyRequests": "Too many failed attempts. Try again later",
+      "invalidEmail": "Invalid email format",
+      "emailInUse": "An account with this email already exists",
+      "weakPassword": "Password must be at least 6 characters",
+      "operationNotAllowed": "This operation is not allowed",
+      "invalidCredentials": "Invalid credentials. Check your email and password",
+      "networkError": "Connection error. Check your internet connection",
+      "popupClosed": "Authentication window was closed",
+      "popupCancelled": "Authentication was cancelled",
+      "requiresRecentLogin": "For security, you must log in again",
+      "generic": "Authentication error. Please try again"
+    }
   }
 }

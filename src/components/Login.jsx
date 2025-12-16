@@ -1,43 +1,61 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from '../context/AuthContext.jsx';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
+import { translateFirebaseError } from "../utils/firebaseErrorHandler";
 
+/**
+ * Componente de Login integrado con Firebase Authentication.
+ * Gestiona la autenticación de usuarios administradores y personal de cocina.
+ * El estado de autenticación se maneja automáticamente por AuthContext via onAuthStateChanged.
+ */
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  /**
+   * Valida que el usuario tenga un rol permitido (ADMIN o KITCHEN).
+   * 
+   * @param {Object} claims - Custom claims del token de Firebase
+   * @returns {boolean} true si el rol está permitido, false en caso contrario
+   */
   const validateAllowedRole = (claims) => {
     const role = (claims.role || '').toUpperCase();
     return role === "ADMIN" || role === "KITCHEN";
   };
 
+  /**
+   * Maneja errores de autenticación traduciendo códigos de Firebase a mensajes amigables.
+   * 
+   * @param {Error} error - Error de Firebase Authentication
+   */
   const handleAuthError = (error) => {
     console.error("Authentication error:", error);
-    setError("Credenciales inválidas o error de autenticación.");
+    const message = translateFirebaseError(error.code);
+    setError(message);
   };
 
+  /**
+   * Maneja el caso de acceso no autorizado (rol no permitido).
+   * 
+   * @param {Object} claims - Custom claims del usuario
+   */
   const handleUnauthorizedAccess = (claims) => {
     const claimsString = JSON.stringify(claims);
-    setError(`Acceso denegado: no eres administrador. Claims: ${claimsString}`);
+    setError(`Acceso denegado: no tienes permisos para acceder. Claims: ${claimsString}`);
   };
 
-  const handleSuccessfulLogin = (user, tokenResult) => {
-    // Guardar usuario en localStorage para el menú lateral
-    localStorage.setItem('user', JSON.stringify({ email: user.email, role: tokenResult.claims.role }));
-    // Actualizar el estado global de autenticación
-    login({
-      email: user.email,
-      role: tokenResult.claims.role || (tokenResult.claims.admin ? 'admin' : undefined),
-      ...tokenResult.claims
-    });
-    // Redirigir según el rol
-    const role = (tokenResult.claims.role || '').toUpperCase();
+  /**
+   * Redirige al usuario según su rol después de una autenticación exitosa.
+   * 
+   * @param {Object} claims - Custom claims del token de Firebase
+   */
+  const handleSuccessfulLogin = (claims) => {
+    const role = (claims.role || '').toUpperCase();
+    
     if (role === 'ADMIN') {
       navigate("/users");
     } else if (role === 'KITCHEN') {
@@ -47,16 +65,28 @@ function Login() {
     }
   };
 
+  /**
+   * Autentica al usuario con Firebase Authentication.
+   * 
+   * @param {string} email - Email del usuario
+   * @param {string} password - Contraseña del usuario
+   * @returns {Promise<Object>} Objeto con user y tokenResult
+   */
   const authenticateUser = async (email, password) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     const tokenResult = await user.getIdTokenResult(true);
     
-
-    
     return { user, tokenResult };
   };
 
+  /**
+   * Maneja el envío del formulario de login.
+   * No actualiza localStorage ni llama a login() del contexto.
+   * El AuthContext detectará automáticamente la autenticación via onAuthStateChanged.
+   * 
+   * @param {Event} e - Evento de submit del formulario
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -66,10 +96,13 @@ function Login() {
       const { user, tokenResult } = await authenticateUser(email, password);
       const isAllowed = validateAllowedRole(tokenResult.claims);
 
-
       if (isAllowed) {
-        handleSuccessfulLogin(user, tokenResult);
+        // No se necesita localStorage ni login() del contexto
+        // onAuthStateChanged del AuthContext detectará la autenticación automáticamente
+        handleSuccessfulLogin(tokenResult.claims);
       } else {
+        // Usuario autenticado pero sin permisos - cerrar sesión
+        await auth.signOut();
         handleUnauthorizedAccess(tokenResult.claims);
       }
     } catch (error) {
