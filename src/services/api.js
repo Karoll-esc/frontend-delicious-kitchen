@@ -6,7 +6,7 @@
 import { getEnvVar } from '../utils/getEnvVar';
 import { normalizeOrderStatus } from '../constants/orderStates';
 
-const API_BASE_URL = getEnvVar('VITE_API_URL') || 'http://localhost:3000';
+const API_BASE_URL = getEnvVar('VITE_API_URL');
 
 /**
  * Normaliza los datos del pedido del backend al formato esperado por el frontend
