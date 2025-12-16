@@ -3,7 +3,7 @@
  * Maneja la comunicación con el backend para endpoints de analytics
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 /**
  * Servicio para operaciones de analíticas de ventas

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { getEnvVar } from '../utils/getEnvVar';
-const NOTIFICATION_URL = getEnvVar('VITE_NOTIFICATION_URL') || 'http://localhost:3003/notifications/stream';
+const NOTIFICATION_URL = getEnvVar('VITE_NOTIFICATION_URL');
 
 /**
  * Hook para conectar con el servicio de notificaciones SSE
