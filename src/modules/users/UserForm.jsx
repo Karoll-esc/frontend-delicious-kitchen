@@ -2,19 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { createUser, getUsers, updateUser, deleteUser } from "./usersService";
 import { useNavigate, useParams } from "react-router-dom";
-
-const roles = [
-  { label: "Admin", value: "ADMIN", labelKey: "roles.ADMIN" },
-  { label: "Kitchen", value: "KITCHEN", labelKey: "roles.KITCHEN" },
-  { label: "Waiter", value: "WAITER", labelKey: "roles.WAITER" },
-];
+import { ROLE_OPTIONS, ROLES } from "../../constants/roles";
 
 const initialState = {
   name: "",
   email: "",
   password: "",
   confirmPassword: "",
-  role: "ADMIN",
+  role: ROLES.ADMIN,
 };
 
 
@@ -187,7 +182,7 @@ const UserForm = () => {
             <label className="block text-sm font-medium text-[#222222] dark:text-gray-300" htmlFor="role">{t('users.roleLabel', 'Rol')}</label>
             <div className="mt-2">
               <select className="block w-full rounded-md border-0 py-2 px-3 text-[#222222] dark:text-white bg-[#F5F5F5] dark:bg-gray-800/50 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-primary" id="role" name="role" value={form.role} onChange={handleChange}>
-                {roles.map((r) => (
+                {ROLE_OPTIONS.map((r) => (
                   <option key={r.value} value={r.value}>{t(r.labelKey)}</option>
                 ))}
               </select>
