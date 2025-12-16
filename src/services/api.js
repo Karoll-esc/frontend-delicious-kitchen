@@ -337,7 +337,29 @@ export async function createOrder(orderData) {
     });
 
     if (!response.ok) {
-      throw new Error(`Error al crear el pedido: ${response.statusText}`);
+      // Intentar obtener el mensaje de error del backend
+      let errorMessage = `Error al crear el pedido: ${response.statusText}`;
+      
+      // Verificar si hay contenido en la respuesta antes de parsear
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          const text = await response.text();
+          if (text) {
+            const errorData = JSON.parse(text);
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            } else if (errorData.error) {
+              errorMessage = errorData.error;
+            }
+          }
+        } catch (parseError) {
+          // Si no se puede parsear el JSON, usar el statusText
+          console.warn('No se pudo parsear la respuesta de error:', parseError);
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
