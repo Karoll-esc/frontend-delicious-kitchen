@@ -9,7 +9,7 @@ export async function deleteUser(id) {
 }
 // Servicio para consumir la API de usuarios
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 
 export async function getUsers(params) {

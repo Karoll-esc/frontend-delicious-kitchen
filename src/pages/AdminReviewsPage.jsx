@@ -33,7 +33,7 @@ const AdminReviewsPage = () => {
   const [actionType, setActionType] = useState(null); // 'approve' | 'hide'
   const [processing, setProcessing] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     fetchReviews();
