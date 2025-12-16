@@ -4,30 +4,9 @@
  */
 
 import { getEnvVar } from '../utils/getEnvVar';
-const API_BASE_URL = getEnvVar('VITE_API_URL');
+import { normalizeOrderStatus } from '../constants/orderStates';
 
-/**
- * Mapea los estados del backend a los estados del frontend
- * @param {string} status - Estado del backend (PENDING, PREPARING, READY, DELIVERED, CANCELLED)
- * @returns {string} Estado del frontend (pending, cooking, ready, delivered, cancelled)
- */
-function mapOrderStatus(status) {
-  const statusMap = {
-    'PENDING': 'pending',
-    'PREPARING': 'cooking',
-    'READY': 'ready',
-    'DELIVERED': 'delivered',
-    'CANCELLED': 'cancelled',
-    // También aceptar estados en minúsculas por si acaso
-    'pending': 'pending',
-    'preparing': 'cooking',
-    'cooking': 'cooking',
-    'ready': 'ready',
-    'delivered': 'delivered',
-    'cancelled': 'cancelled'
-  };
-  return statusMap[status?.toUpperCase()] || status || 'pending';
-}
+const API_BASE_URL = getEnvVar('VITE_API_URL');
 
 /**
  * Normaliza los datos del pedido del backend al formato esperado por el frontend
@@ -46,7 +25,7 @@ function normalizeOrderData(orderData) {
     customer: order.customerName || order.customer,
     customerName: order.customerName || order.customer,
     customerEmail: order.customerEmail,
-    status: mapOrderStatus(order.status),
+    status: normalizeOrderStatus(order.status),
     items: order.items || [],
     total: order.total || 0,
     notes: order.notes,
