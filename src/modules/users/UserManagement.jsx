@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { deactivateUser } from "./usersService";
 import { getRoleTranslation } from "../../utils/roleTranslations";
+import { VALID_ROLES } from "../../constants/roles";
 
 import DefaultUserAvatar from "./DefaultUserAvatar";
 import Pagination from "./Pagination";
@@ -47,7 +48,7 @@ const UserManagement = () => {
 
   const navigate = useNavigate();
   // Obtener roles y estados únicos
-  const allRoles = Array.from(new Set(users.map(u => u.role || u.customClaims?.role || '').filter(Boolean)));
+  const allRoles = VALID_ROLES;
   const allStatuses = Array.from(new Set(users.map(u => u.status || 'Active')));
 
   // Filtrar usuarios por nombre/correo, rol y estado
