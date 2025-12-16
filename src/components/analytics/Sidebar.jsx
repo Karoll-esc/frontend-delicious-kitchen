@@ -26,19 +26,30 @@ function Sidebar() {
   };
 
   /**
-   * Maneja el cierre de sesión seguro del usuario.
-   * Ejecuta logout del AuthContext que cierra sesión en Firebase y limpia localStorage.
-   * Redirige a /login después de cerrar sesión exitosamente.
+   * Maneja el cierre de sesión seguro del usuario (HU-005).
+   * 
+   * Acciones ejecutadas:
+   * 1. Muestra estado de carga con mensaje internacionalizado
+   * 2. Ejecuta logout del AuthContext (Firebase + localStorage)
+   * 3. Redirige a /login después de logout exitoso
+   * 4. Muestra error internacionalizado si falla
+   * 
+   * Casos de prueba cubiertos:
+   * - TC-005-P01: Logout exitoso desde interfaz
+   * - TC-005-P02: Sincronización con otras pestañas (via AuthContext)
+   * - TC-005-B01: Logout con token expirado
    */
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
       await logout();
       // El AuthContext limpiará el estado automáticamente via onAuthStateChanged
+      // Otras pestañas detectarán el cambio via storage event
       navigate('/login');
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-      alert('Error al cerrar sesión. Por favor intenta nuevamente.');
+      console.error(t('auth.logoutError'), error);
+      // Mostrar error en interfaz (placeholder para toast/notification system)
+      alert(t('auth.logoutError'));
     } finally {
       setIsLoggingOut(false);
     }
@@ -127,7 +138,7 @@ function Sidebar() {
           >
             <span className="material-symbols-outlined text-2xl">logout</span>
             <p className="text-sm font-medium leading-normal">
-              {isLoggingOut ? 'Cerrando sesión...' : 'Logout'}
+              {isLoggingOut ? t('auth.loggingOut') : t('auth.logout')}
             </p>
           </button>
         </div>

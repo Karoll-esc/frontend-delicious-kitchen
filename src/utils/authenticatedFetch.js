@@ -1,14 +1,49 @@
 /**
- * Utility para realizar peticiones HTTP autenticadas con token de Firebase
- * Agrega automáticamente el token JWT al header Authorization
- * Maneja errores 401 redirigiendo al login cuando el token expira
+ * Utility para realizar peticiones HTTP autenticadas con token de Firebase (HU-005).
+ * Agrega automáticamente el token JWT al header Authorization.
+ * Maneja errores 401 redirigiendo al login cuando el token expira.
+ * Integrado con sistema de navegación SPA y traducciones i18n.
  */
 
 import { auth } from '../firebaseConfig';
+import i18n from '../i18n';
 
 /**
- * Realiza una petición fetch autenticada con el token de Firebase.
+ * Maneja sesión expirada de forma centralizada (HU-005).
+ * Cierra sesión, limpia estado y redirige con parámetro de sesión expirada.
+ * 
+ * @private
+ */
+const handleSessionExpired = async () => {
+  console.warn(i18n.t('auth.sessionExpired'));
+  
+  try {
+    // 1. Cerrar sesión en Firebase
+    await auth.signOut();
+    
+    // 2. Limpiar localStorage
+    localStorage.removeItem('user');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
+    
+    // 3. Redirigir con indicador de sesión expirada
+    // Nota: Usamos window.location.href para forzar recarga completa
+    // Esto asegura que el AuthContext detecte el logout correctamente
+    window.location.href = '/login?session_expired=true';
+  } catch (error) {
+    console.error('Error al manejar sesión expirada:', error);
+    // Forzar redirección incluso si signOut falla
+    window.location.href = '/login?session_expired=true';
+  }
+};
+
+/**
+ * Realiza una petición fetch autenticada con el token de Firebase (HU-005).
  * Maneja automáticamente errores 401 (token expirado/inválido) redirigiendo al login.
+ * 
+ * Casos de prueba cubiertos:
+ * - TC-005-N01: Bloqueo después de logout
+ * - TC-005-B01: Logout con token expirado
  * 
  * @param {string} url - URL completa del endpoint
  * @param {Object} options - Opciones de fetch (method, body, headers, etc.)
@@ -43,20 +78,10 @@ export async function authenticatedFetch(url, options = {}) {
       headers,
     });
 
-    // Manejo de error 401: token expirado o inválido
+    // Manejo de error 401: token expirado o inválido (HU-005)
     if (response.status === 401) {
-      console.warn('Token expirado o inválido (401). Redirigiendo al login...');
-      
-      // Cerrar sesión en Firebase
-      await auth.signOut();
-      
-      // Limpiar localStorage
-      localStorage.removeItem('user');
-      
-      // Redirigir al login
-      window.location.href = '/login';
-      
-      throw new Error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente');
+      await handleSessionExpired();
+      throw new Error(i18n.t('auth.sessionExpired'));
     }
 
     return response;

@@ -12,7 +12,12 @@
     "switchToSpanish": "Cambiar a español",
     "loading": "Cargando...",
     "error": "Error",
-    "success": "Éxito"
+    "success": "Éxito",
+    "backToHome": "Volver al inicio"
+  },
+  "errors": {
+    "pageNotFound": "Página no encontrada",
+    "pageNotFoundDescription": "Lo sentimos, la página que buscas no existe o ha sido movida."
   },
   "orderStatusFooter": {
     "estimatedTime": "Tiempo estimado restante",
@@ -329,6 +334,16 @@
     "WAITER": "Mesero"
   },
   "auth": {
+    "logout": "Cerrar sesión",
+    "loggingOut": "Cerrando sesión...",
+    "logoutSuccess": "Sesión cerrada exitosamente",
+    "logoutError": "Error al cerrar sesión. Por favor intenta nuevamente",
+    "sessionExpired": "Tu sesión ha expirado. Por favor, inicia sesión nuevamente",
+    "loginRequired": "Debes iniciar sesión para acceder a esta sección",
+    "sessionClosed": "Tu sesión se cerró en otra pestaña",
+    "syncLogout": "Sesión cerrada en otro dispositivo",
+    "noPermissions": "No tienes permisos para acceder a esta sección",
+    "verifyingSession": "Verificando sesión...",
     "errors": {
       "wrongPassword": "Credenciales inválidas. Verifica tu email y contraseña",
       "userNotFound": "No existe una cuenta con ese email",

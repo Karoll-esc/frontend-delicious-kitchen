@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Contexto de autenticación integrado con Firebase Authentication SDK.
@@ -19,6 +20,13 @@ export const AuthContext = createContext({
 });
 
 /**
+ * Keys de localStorage relacionadas con la sesión del usuario.
+ * Whitelist de keys que deben preservarse al cerrar sesión (preferencias de usuario).
+ */
+const SESSION_STORAGE_KEYS = ['user', 'authToken', 'refreshToken'];
+const PRESERVE_KEYS = ['i18nextLng', 'theme']; // Preferencias que se mantienen
+
+/**
  * Provider del contexto de autenticación con Firebase Auth SDK.
  * Escucha cambios de estado de autenticación automáticamente usando onAuthStateChanged.
  * Proporciona persistencia automática de sesión y sincronización entre pestañas.
@@ -30,6 +38,7 @@ export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     /**
@@ -39,7 +48,7 @@ export function AuthProvider({ children }) {
      * - El usuario cierra sesión
      * - La aplicación se recarga (detecta sesión persistente)
      * - El token expira o es revocado
-     * - Se cierra sesión en otra pestaña (sincronización)
+     * - Se cierra sesión en otra pestaña (sincronización vía Firebase)
      */
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -80,9 +89,63 @@ export function AuthProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    /**
+     * Listener de sincronización entre pestañas mediante storage event.
+     * Detecta cuando se cierra sesión en otra pestaña del navegador y sincroniza el estado.
+     * 
+     * Casos de uso (HU-005 TC-005-P02):
+     * - Usuario cierra sesión en Pestaña A
+     * - Pestaña B detecta cambio en localStorage
+     * - Pestaña B actualiza estado a no autenticado
+     * - Ambas pestañas redirigen a /login
+     */
+    const handleStorageChange = (event) => {
+      // Detectar eliminación de key 'user' (logout en otra pestaña)
+      if (event.key === 'user' && event.newValue === null) {
+        console.log(t('auth.sessionClosed'));
+        
+        // Actualizar estado local para reflejar logout
+        setUser(null);
+        setIsLoggedIn(false);
+        
+        // Firebase también detectará esto con onAuthStateChanged,
+        // pero actualizamos inmediatamente para mejor UX
+      }
+    };
+
+    // Escuchar eventos de cambio en localStorage
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Cleanup: remover listener al desmontar
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [t]);
+
   /**
-   * Cierra la sesión del usuario de forma segura.
-   * Ejecuta signOut de Firebase y limpia localStorage explícitamente.
+   * Limpia todas las keys de sesión en localStorage excepto preferencias de usuario.
+   * Preserva: idioma (i18nextLng), tema, etc.
+   * 
+   * @private
+   */
+  const clearSessionStorage = () => {
+    SESSION_STORAGE_KEYS.forEach(key => {
+      localStorage.removeItem(key);
+    });
+  };
+
+  /**
+   * Cierra la sesión del usuario de forma segura y completa (HU-005).
+   * 
+   * Acciones ejecutadas:
+   * 1. Cierra sesión en Firebase Auth (signOut)
+   * 2. Limpia todas las keys de sesión en localStorage
+   * 3. Actualiza estado local (via onAuthStateChanged)
+   * 4. Sincroniza con otras pestañas (via storage event)
+   * 
+   * Casos de prueba cubiertos:
+   * - TC-005-P01: Logout exitoso desde interfaz
+   * - TC-005-P02: Sincronización logout entre pestañas
+   * - TC-005-B01: Logout con token ya expirado
    * 
    * @async
    * @returns {Promise<void>}
@@ -90,16 +153,25 @@ export function AuthProvider({ children }) {
    */
   const logout = async () => {
     try {
-      // Cerrar sesión en Firebase Auth
+      // 1. Cerrar sesión en Firebase Auth (invalida token)
       await signOut(auth);
       
-      // Limpiar localStorage explícitamente (alineado con HU-005)
-      localStorage.removeItem('user');
+      // 2. Limpiar localStorage de forma exhaustiva
+      clearSessionStorage();
       
-      // El estado se actualizará automáticamente por onAuthStateChanged
-      console.log('Sesión cerrada exitosamente');
+      // 3. El estado se actualizará automáticamente por onAuthStateChanged
+      // 4. Otras pestañas detectarán el cambio via storage event
+      
+      console.log(t('auth.logoutSuccess'));
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      console.error(t('auth.logoutError'), error);
+      
+      // Incluso si falla signOut, limpiar estado local
+      // (caso: token ya expirado - TC-005-B01)
+      clearSessionStorage();
+      setUser(null);
+      setIsLoggedIn(false);
+      
       throw error;
     }
   };
