@@ -1,7 +1,7 @@
 import { rest } from 'msw';
 
-// Usar variable de entorno en tests si está definida, sino fallback
-const API_BASE = process.env.VITE_API_URL || 'http://localhost:3000';
+// URL base del API para mocks de MSW
+const API_BASE = process.env.VITE_API_URL;
 
 export const handlers = [
   // GET /orders/:orderId -> devuelve pedido en estado "pending" por defecto
