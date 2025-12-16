@@ -304,5 +304,10 @@
     "submitButton": "Submit Review",
     "charactersRemaining": "characters remaining",
     "foodQualityLabel": "Food Quality"
+  },
+  "roles": {
+    "ADMIN": "Admin",
+    "KITCHEN": "Kitchen",
+    "WAITER": "Waiter"
   }
 }
