@@ -28,7 +28,9 @@
     "title": "Cancel Order",
     "confirmMessage": "Are you sure you want to cancel this order? This action cannot be undone.",
     "keepOrder": "No, Keep Order",
-    "cancelOrder": "Yes, Cancel Order"
+    "cancelOrder": "Yes, Cancel Order",
+    "reasonLabel": "Cancellation reason (optional)",
+    "reasonPlaceholder": "E.g: Changed my mind, found another option..."
   },
   "orderStatus": {
     "orderNumber": "Order #{{id}}",
@@ -57,7 +59,11 @@
     "infoPreparing": "Our chefs are carefully preparing your order.",
     "infoReady": "Your order is ready and waiting for you at the counter.",
     "infoDelivered": "We hope you enjoyed your meal. Thank you for choosing us!",
-    "trackOrder": "Track order"
+    "trackOrder": "Track order",
+    "cannotCancelPreparing": "You cannot cancel this order because it's already being prepared by the kitchen.",
+    "cannotCancelReady": "You cannot cancel this order because it's ready for pickup.",
+    "cannotCancelCompleted": "This order has been completed and cannot be cancelled.",
+    "cancelOrderAriaLabel": "Cancel this order"
   },
   "notification": {
     "defaultTitle": "Notification",
