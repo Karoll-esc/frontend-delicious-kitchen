@@ -1,6 +1,6 @@
 /**
  * Servicio API para comunicación con el backend
- * Base URL: http://localhost:3000 (API Gateway)
+ * Base URL configurada mediante VITE_API_URL en .env
  */
 
 import { getEnvVar } from '../utils/getEnvVar';

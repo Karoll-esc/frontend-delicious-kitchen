@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { analyticsService } from '../services/analyticsService';
+import { getAnalytics, exportAnalyticsCSV } from '../services/api';
 
 /**
  * Custom Hook para gestionar el estado y lógica de analíticas de ventas
@@ -24,7 +24,7 @@ export const useSalesAnalytics = () => {
     setError(null);
     
     try {
-      const response = await analyticsService.getAnalytics(filters);
+      const response = await getAnalytics(filters);
       setData(response);
     } catch (err) {
       setError(err.message || 'Error al cargar analíticas');
@@ -39,7 +39,7 @@ export const useSalesAnalytics = () => {
    */
   const exportToCSV = useCallback(async () => {
     try {
-      await analyticsService.exportCSV({
+      await exportAnalyticsCSV({
         ...filters,
         columns: ['period', 'totalOrders', 'totalRevenue', 'productId', 'productName', 'quantity', 'avgPrepTime']
       });
