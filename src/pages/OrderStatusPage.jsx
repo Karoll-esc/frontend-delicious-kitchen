@@ -32,7 +32,7 @@ function OrderStatusPage() {
         </div>
         {/* Título */}
         <h2 className="flex-1 text-center text-lg font-bold leading-tight tracking-[-0.015em] text-text-light dark:text-text-dark">
-          {t('orderStatus.trackOrder', 'Track Order')}
+          {t('orderStatus.trackOrder')}
         </h2>
         {/* Botón cambio de idioma */}
         <div className="flex items-center justify-end w-12 h-12">
@@ -92,7 +92,7 @@ function OrderStatusFooter({ order, onRefresh }) {
   // Calcular tiempo estimado basado en el estado del pedido
   const calculateEstimatedTime = () => {
     if (!order) {
-      return t('orderStatusFooter.calculating', 'Calculando...');
+      return t('orderStatusFooter.calculating');
     }
 
     const now = new Date();
@@ -110,17 +110,17 @@ function OrderStatusFooter({ order, onRefresh }) {
         estimatedMinutes = Math.max(0, 10 - elapsedMinutes);
         break;
       case 'ready':
-        return t('orderStatus.stepReady', 'Ready for Pickup');
+        return t('orderStatus.stepReady');
       case 'delivered':
-        return t('orderStatusFooter.delivered', 'Delivered');
+        return t('orderStatusFooter.delivered');
       case 'cancelled':
-        return t('orderStatusFooter.cancelled', 'Cancelled');
+        return t('orderStatusFooter.cancelled');
       default:
         estimatedMinutes = 12;
     }
 
     if (estimatedMinutes <= 0) {
-      return t('orderStatusFooter.soon', 'Pronto');
+      return t('orderStatusFooter.soon');
     }
 
     return `${estimatedMinutes} ${t(estimatedMinutes === 1 ? 'orderStatusFooter.minute' : 'orderStatusFooter.minutes')}`;

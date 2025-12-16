@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import StarRating from './StarRating';
 
 /**
@@ -22,6 +23,7 @@ export default function ReviewModal({
   orderData,
   onSubmit
 }) {
+  const { t } = useTranslation();
   const [ratings, setRatings] = useState({
     overall: 0,
     food: 0
@@ -38,15 +40,15 @@ export default function ReviewModal({
     const newErrors = {};
 
     if (!ratings.overall || ratings.overall < 1) {
-      newErrors.overall = 'Overall rating is required';
+      newErrors.overall = t('reviewModal.errors.overallRatingRequired');
     }
 
     if (!ratings.food || ratings.food < 1) {
-      newErrors.food = 'Food rating is required';
+      newErrors.food = t('reviewModal.errors.foodQualityRequired');
     }
 
     if (comment && comment.length > 500) {
-      newErrors.comment = 'Comment must not exceed 500 characters';
+      newErrors.comment = t('reviewModal.errors.commentMaxLength');
     }
 
     setErrors(newErrors);
@@ -86,7 +88,7 @@ export default function ReviewModal({
       });
 
       if (!response.ok) {
-        let errorMessage = 'Failed to submit review';
+        let errorMessage = t('reviewModal.errors.submitFailed');
         try {
           const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
@@ -114,7 +116,7 @@ export default function ReviewModal({
 
     } catch (error) {
       console.error('Error submitting review:', error);
-      const errorMessage = error.message || 'Failed to submit review. Please try again.';
+      const errorMessage = error.message || t('reviewModal.errors.submitFailedRetry');
       setErrors({ submit: errorMessage });
     } finally {
       setIsSubmitting(false);
@@ -149,17 +151,17 @@ export default function ReviewModal({
               onClick={handleClose}
               disabled={isSubmitting}
               className="flex items-center gap-1 text-white hover:text-[#F5F5F5] transition-colors disabled:opacity-50"
-              aria-label="Back"
+              aria-label={t('reviewModal.backButton')}
             >
               <span className="material-symbols-outlined">arrow_back</span>
-              <span className="font-medium">Back</span>
+              <span className="font-medium">{t('reviewModal.backButton')}</span>
             </button>
-            <h2 className="text-xl font-bold">Share Your Experience</h2>
+            <h2 className="text-xl font-bold">{t('reviewModal.title')}</h2>
             <div className="w-16"></div>
           </div>
           {orderData?.orderNumber && (
             <p className="text-sm text-white/90 mt-2 text-center">
-              Order #{orderData.orderNumber}
+              {t('reviewModal.orderNumberPrefix')}{orderData.orderNumber}
             </p>
           )}
         </div>
@@ -175,13 +177,13 @@ export default function ReviewModal({
               </div>
             </div>
             <h3 className="text-2xl font-bold text-[#222222] mb-2">
-              Thank You!
+              {t('reviewModal.thankYouTitle')}
             </h3>
             <p className="text-[#666666] mb-1">
-              Your review has been submitted successfully
+              {t('reviewModal.successMessage')}
             </p>
             <p className="text-sm text-[#999999]">
-              Redirecting to home...
+              {t('reviewModal.redirectingMessage')}
             </p>
           </div>
         ) : (
@@ -189,7 +191,7 @@ export default function ReviewModal({
             {/* Overall Rating */}
             <div className="mb-6">
               <StarRating
-                label="Overall Rating"
+                label={t('reviewModal.overallRatingLabel')}
                 rating={ratings.overall}
                 onChange={(value) => setRatings({ ...ratings, overall: value })}
                 size="md"
@@ -202,7 +204,7 @@ export default function ReviewModal({
             {/* Food Quality */}
             <div className="mb-6">
               <StarRating
-                label="Food Quality"
+                label={t('reviewModal.foodQualityLabel')}
                 rating={ratings.food}
                 onChange={(value) => setRatings({ ...ratings, food: value })}
                 size="md"
@@ -215,19 +217,19 @@ export default function ReviewModal({
             {/* Comment (Optional) */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-[#222222] mb-2">
-                Comments (Optional)
+                {t('reviewModal.commentsLabel')}
               </label>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Tell us about your experience..."
+                placeholder={t('reviewModal.commentsPlaceholder')}
                 maxLength={500}
                 rows={4}
                 className="w-full px-4 py-3 border border-[#CCCCCC] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent text-[#222222] placeholder-[#CCCCCC]"
               />
               <div className="flex justify-between items-center mt-1">
                 <p className={`text-xs ${remainingChars < 50 ? 'text-[#FF6B35]' : 'text-[#666666]'}`}>
-                  {remainingChars} characters remaining
+                  {remainingChars} {t('reviewModal.charactersRemaining')}
                 </p>
                 {errors.comment && (
                   <p className="text-xs text-red-500">{errors.comment}</p>
@@ -250,7 +252,7 @@ export default function ReviewModal({
                 disabled={isSubmitting}
                 className="flex-1 px-4 py-3 bg-[#F5F5F5] text-[#666666] font-semibold rounded-lg hover:bg-[#CCCCCC] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cancel
+                {t('reviewModal.cancelButton')}
               </button>
               <button
                 type="submit"
@@ -260,10 +262,10 @@ export default function ReviewModal({
                 {isSubmitting ? (
                   <>
                     <span className="animate-spin">⏳</span>
-                    Submitting...
+                    {t('reviewModal.submittingButton')}
                   </>
                 ) : (
-                  'Submit Review'
+                  t('reviewModal.submitButton')
                 )}
               </button>
             </div>
