@@ -6,6 +6,8 @@
  * según el idioma activo en i18n.
  */
 
+import { VALID_ROLES } from '../constants/roles';
+
 /**
  * Obtiene la traducción de un rol según el idioma activo
  * 
@@ -19,9 +21,7 @@
  */
 export const getRoleTranslation = (roleValue, t) => {
   // Validar que el valor del rol sea válido
-  const validRoles = ['ADMIN', 'KITCHEN', 'WAITER'];
-  
-  if (!roleValue || !validRoles.includes(roleValue)) {
+  if (!roleValue || !VALID_ROLES.includes(roleValue)) {
     console.warn(`Invalid role value: ${roleValue}`);
     return roleValue || 'Unknown';
   }
@@ -45,9 +45,7 @@ export const getRoleTranslation = (roleValue, t) => {
  * // ]
  */
 export const getAllRoleTranslations = (t) => {
-  const roles = ['ADMIN', 'KITCHEN', 'WAITER'];
-  
-  return roles.map(role => ({
+  return VALID_ROLES.map(role => ({
     value: role,
     label: t(`roles.${role}`)
   }));
