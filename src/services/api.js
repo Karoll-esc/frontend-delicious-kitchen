@@ -89,7 +89,7 @@ export async function getKitchenOrders(status) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
 
@@ -169,7 +169,7 @@ export async function getKitchenOrder(orderId) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
 
@@ -222,7 +222,7 @@ export async function startPreparingOrder(orderId) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
 
@@ -275,7 +275,7 @@ export async function markOrderAsReady(orderId) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
 
@@ -394,7 +394,7 @@ export async function cancelOrder(orderId) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
       
@@ -627,7 +627,7 @@ export async function getAnalytics(filters) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
       
@@ -694,7 +694,7 @@ export async function exportAnalyticsCSV(params) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
       

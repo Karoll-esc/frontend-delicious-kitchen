@@ -1,5 +1,7 @@
 // Script para asignar el custom claim 'role: ADMIN' a un usuario en Firebase Authentication
-// Ejecutar con Node.js en el backend o localmente (no en el frontend)
+// ⚠️ ATENCIÓN: Este script requiere firebase-admin y debe ejecutarse ÚNICAMENTE en el backend
+// NO debe ser incluido en el bundle del frontend por razones de seguridad
+// Ver HU-002 para migración al backend
 
 const admin = require("firebase-admin");
 
