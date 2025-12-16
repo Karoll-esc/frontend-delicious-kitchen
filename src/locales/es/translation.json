@@ -1,10 +1,28 @@
 {
+  "common": {
+    "back": "Atrás",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "submit": "Enviar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "switchToEnglish": "Cambiar a inglés",
+    "switchToSpanish": "Cambiar a español",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
+  },
   "orderStatusFooter": {
     "estimatedTime": "Tiempo estimado restante",
     "minute": "minuto",
     "minutes": "minutos",
     "soon": "Pronto",
-    "refresh": "Refrescar"
+    "refresh": "Refrescar",
+    "calculating": "Calculando...",
+    "delivered": "Entregado",
+    "cancelled": "Cancelado"
   },
   "orderCancelModal": {
     "title": "Cancelar pedido",
@@ -35,7 +53,11 @@
     "readyTitle": "¡Pedido listo!",
     "readyMessage": "Tu pedido está listo para recoger.",
     "pickUpOrder": "Recoger pedido",
-    "addReview": "Agregar reseña"
+    "addReview": "Agregar reseña",
+    "infoPreparing": "Nuestros chefs están preparando tu pedido con cuidado.",
+    "infoReady": "Tu pedido está listo y esperándote en el mostrador.",
+    "infoDelivered": "Esperamos que hayas disfrutado tu comida. ¡Gracias por elegirnos!",
+    "trackOrder": "Rastrear pedido"
   },
   "notification": {
     "defaultTitle": "Notificación",
@@ -265,6 +287,34 @@
     "successTitle": "¡Pedido realizado!",
     "successText": "Tu pedido fue creado exitosamente.",
     "orderNumberLabel": "Número de pedido",
-    "viewOrderStatus": "Ver estado del pedido"
+    "viewOrderStatus": "Ver estado del pedido",
+    "errors": {
+      "validationGeneral": "Por favor verifica los datos ingresados",
+      "createOrderFailed": "Error al crear el pedido. Por favor intenta de nuevo.",
+      "invalidEmailFormat": "Por favor ingresa un formato de correo válido"
+    }
+  },
+  "reviewModal": {
+    "title": "Comparte tu experiencia",
+    "thankYouTitle": "¡Gracias!",
+    "successMessage": "Tu reseña ha sido enviada exitosamente",
+    "redirectingMessage": "Redirigiendo al inicio...",
+    "orderNumberPrefix": "Pedido #",
+    "overallRatingLabel": "Calificación general",
+    "foodQualityLabel": "Calidad de la comida",
+    "commentsLabel": "Comentarios (Opcional)",
+    "commentsPlaceholder": "Cuéntanos sobre tu experiencia...",
+    "charactersRemaining": "caracteres restantes",
+    "cancelButton": "Cancelar",
+    "submitButton": "Enviar reseña",
+    "submittingButton": "Enviando...",
+    "backButton": "Atrás",
+    "errors": {
+      "overallRatingRequired": "Por favor selecciona una calificación general",
+      "foodQualityRequired": "Por favor califica la calidad de la comida",
+      "commentMaxLength": "El comentario no debe exceder los 500 caracteres",
+      "submitFailed": "Error al enviar la reseña",
+      "submitFailedRetry": "Error al enviar la reseña. Por favor intenta de nuevo."
+    }
   }
 }
