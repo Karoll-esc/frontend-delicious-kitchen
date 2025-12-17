@@ -9,6 +9,7 @@ import OrderStatusPage from './pages/OrderStatusPage';
 import SalesAnalyticsDashboard from './views/SalesAnalyticsDashboard';
 import ReviewsPage from './pages/ReviewsPage';
 import AdminReviewsPage from './pages/AdminReviewsPage';
+import AdminSurveysPage from './pages/AdminSurveysPage';
 import NotFound from './pages/NotFound';
 
 import Login from './components/Login';
@@ -65,6 +66,11 @@ function App() {
         <Route path="/admin/reviews" element={
           <ProtectedRoute requireAdmin={true}>
             <AdminReviewsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/surveys" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminSurveysPage />
           </ProtectedRoute>
         } />
         <Route path="*" element={<NotFound />} />
