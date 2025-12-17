@@ -422,12 +422,13 @@ export async function cancelOrder(orderId, reason = 'Cancelado por el cliente') 
 // ==================== REVIEW API FUNCTIONS ====================
 
 /**
- * Crea una nueva reseña para un pedido
+ * Crea una nueva reseña (HU-014: Sistema de Reseñas Públicas)
  * @param {Object} reviewData - Datos de la reseña
- * @param {string} reviewData.orderId - ID del pedido (requerido)
+ * @param {string} [reviewData.orderNumber] - Número de pedido (OPCIONAL, puede ser "N/A")
  * @param {string} reviewData.customerName - Nombre del cliente (requerido)
- * @param {number} reviewData.overallRating - Calificación general 1-5 (requerido)
+ * @param {string} reviewData.customerEmail - Email del cliente (requerido)
  * @param {number} reviewData.foodRating - Calificación de comida 1-5 (requerido)
+ * @param {number} reviewData.tasteRating - Calificación de sabor 1-5 (requerido)
  * @param {string} [reviewData.comment] - Comentario opcional (max 500 chars)
  * @returns {Promise<Object>} Datos de la reseña creada
  */
