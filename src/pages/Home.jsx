@@ -21,6 +21,10 @@ function Home() {
     navigate('/order');
   };
 
+  const handleAdminLogin = () => {
+    navigate('/login');
+  };
+
   const handleLanguageChange = (e) => {
     i18n.changeLanguage(e.target.value);
   };
@@ -39,6 +43,13 @@ function Home() {
               </h1>
             </div>
             <div className="flex items-center gap-4">
+              <button
+                onClick={handleAdminLogin}
+                className="bg-gray-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-gray-700 transition-all inline-flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-lg">admin_panel_settings</span>
+                {t('home.adminLogin')}
+              </button>
               <button
                 onClick={handleOrderNow}
                 className="bg-primary text-white font-semibold px-6 py-2 rounded-lg hover:bg-primary/90 transition-all"
