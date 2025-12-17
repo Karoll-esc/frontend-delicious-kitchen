@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { deactivateUser } from "./usersService";
+import { deactivateUser, activateUser } from "./usersService";
 import { getRoleTranslation } from "../../utils/roleTranslations";
 import { VALID_ROLES } from "../../constants/roles";
 
@@ -27,6 +27,9 @@ const UserManagement = () => {
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
   const [userToDeactivate, setUserToDeactivate] = useState(null);
   const [deactivating, setDeactivating] = useState(false);
+  const [showActivateModal, setShowActivateModal] = useState(false);
+  const [userToActivate, setUserToActivate] = useState(null);
+  const [activating, setActivating] = useState(false);
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   // TODO: agregar filtros y paginación real
@@ -178,7 +181,7 @@ const UserManagement = () => {
                           </td>
                           <td className="px-6 py-4 text-sm font-medium">
                             <div className="flex items-center gap-2">
-                              {String(user.status || '').toLowerCase() !== 'desactivado' && (
+                              {String(user.status || '').toLowerCase() !== 'desactivado' && String(user.status || '').toLowerCase() !== 'inactive' ? (
                                 <>
                                   <button
                                     className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
@@ -198,6 +201,17 @@ const UserManagement = () => {
                                     <span className="material-symbols-outlined text-lg">delete</span>
                                   </button>
                                 </>
+                              ) : (
+                                <button
+                                  className="p-2 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500 transition-colors"
+                                  onClick={() => {
+                                    setUserToActivate(user);
+                                    setShowActivateModal(true);
+                                  }}
+                                  title={t('users.activateUser', 'Reactivar usuario')}
+                                >
+                                  <span className="material-symbols-outlined text-lg">person_add</span>
+                                </button>
                               )}
                             </div>
                           </td>
@@ -255,6 +269,42 @@ const UserManagement = () => {
                   }}
                   disabled={deactivating}
                 >{deactivating ? t('users.deactivating', 'Desactivando...') : t('users.deactivateButton', 'Confirmar')}</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Modal de confirmación de reactivación */}
+        {showActivateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white dark:bg-[#1C1411] rounded-lg shadow-lg p-8 w-full max-w-md">
+              <h2 className="text-xl font-bold mb-4 text-[#181210] dark:text-white">{t('users.activateTitle', '¿Reactivar usuario?')}</h2>
+              <p className="mb-6 text-[#8d6a5e] dark:text-gray-400">{t('users.activateConfirm', '¿Estás seguro de que deseas reactivar a')} <span className="font-semibold">{userToActivate?.displayName || userToActivate?.name || userToActivate?.email}</span>? {t('users.activateInfo', 'El usuario podrá acceder nuevamente al sistema.')}</p>
+              <div className="flex justify-end gap-4">
+                <button
+                  className="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-[#181210] dark:text-white font-medium hover:bg-gray-300 dark:hover:bg-gray-600"
+                  onClick={() => {
+                    setShowActivateModal(false);
+                    setUserToActivate(null);
+                  }}
+                  disabled={activating}
+                >{t('users.activateCancel', 'Cancelar')}</button>
+                <button
+                  className="px-4 py-2 rounded-md bg-green-600 text-white font-bold hover:bg-green-700"
+                  onClick={async () => {
+                    setActivating(true);
+                    try {
+                      await activateUser(userToActivate.id || userToActivate.uid);
+                      setUsers(users => users.map(u => (u.id === userToActivate.id || u.uid === userToActivate.uid) ? { ...u, status: 'Active' } : u));
+                      setShowActivateModal(false);
+                      setUserToActivate(null);
+                    } catch (err) {
+                      alert(t('users.activateError', 'Error al reactivar usuario'));
+                    } finally {
+                      setActivating(false);
+                    }
+                  }}
+                  disabled={activating}
+                >{activating ? t('users.activating', 'Reactivando...') : t('users.activateButton', 'Reactivar')}</button>
               </div>
             </div>
           </div>
