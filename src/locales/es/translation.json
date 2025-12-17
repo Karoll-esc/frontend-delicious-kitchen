@@ -195,7 +195,6 @@
     "roleLabel": "Rol",
     "roleAdmin": "Administrador",
     "roleKitchen": "Cocina",
-    "roleWaiter": "Mesero",
     "notFound": "Usuario no encontrado",
     "loadError": "Error al cargar usuario",
     "deleteConfirm": "¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.",
@@ -374,8 +373,7 @@
   },
   "roles": {
     "ADMIN": "Administrador",
-    "KITCHEN": "Cocina",
-    "WAITER": "Mesero"
+    "KITCHEN": "Cocina"
   },
   "auth": {
     "logout": "Cerrar sesión",
