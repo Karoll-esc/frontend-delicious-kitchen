@@ -11,7 +11,7 @@ import { VALID_ROLES } from '../constants/roles';
 /**
  * Obtiene la traducción de un rol según el idioma activo
  * 
- * @param {string} roleValue - Valor del rol (ADMIN, KITCHEN, WAITER)
+ * @param {string} roleValue - Valor del rol (ADMIN, KITCHEN)
  * @param {Function} t - Función de traducción de i18next
  * @returns {string} Nombre del rol traducido
  * 
@@ -40,8 +40,7 @@ export const getRoleTranslation = (roleValue, t) => {
  * const roleOptions = getAllRoleTranslations(t);
  * // Retorna [
  * //   { value: 'ADMIN', label: 'Admin' },
- * //   { value: 'KITCHEN', label: 'Kitchen' },
- * //   { value: 'WAITER', label: 'Waiter' }
+ * //   { value: 'KITCHEN', label: 'Kitchen' }
  * // ]
  */
 export const getAllRoleTranslations = (t) => {

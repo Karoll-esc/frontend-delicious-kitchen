@@ -9,7 +9,6 @@
 export const ROLES = {
   ADMIN: 'ADMIN',
   KITCHEN: 'KITCHEN',
-  WAITER: 'WAITER',
 };
 
 /**
@@ -23,5 +22,4 @@ export const VALID_ROLES = Object.values(ROLES);
 export const ROLE_OPTIONS = [
   { label: "Admin", value: ROLES.ADMIN, labelKey: "roles.ADMIN" },
   { label: "Kitchen", value: ROLES.KITCHEN, labelKey: "roles.KITCHEN" },
-  { label: "Waiter", value: ROLES.WAITER, labelKey: "roles.WAITER" },
 ];
