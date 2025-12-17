@@ -126,7 +126,8 @@
     "userManagement": "admin panel",
     "kitchen": "Kitchen",
     "reports": "Reports",
-    "reviewManagement": "Review Management"
+    "reviewManagement": "Review Management",
+    "surveyManagement": "Process Surveys"
   },
   "login": {
     "adminPanel": "Admin Panel",
@@ -315,6 +316,49 @@
     "submitButton": "Submit Review",
     "charactersRemaining": "characters remaining",
     "foodQualityLabel": "Food Quality"
+  },
+  "surveyModal": {
+    "title": "How's your order going?",
+    "thankYouTitle": "Thanks for your feedback!",
+    "successMessage": "Your survey has been submitted successfully",
+    "orderNumberPrefix": "Order #",
+    "introMessage": "Your feedback helps us improve. This survey is optional.",
+    "waitTimeLabel": "Wait Time",
+    "serviceLabel": "Staff Service",
+    "commentsLabel": "Additional Comments (Optional)",
+    "commentsPlaceholder": "Anything you'd like to tell us?",
+    "charactersRemaining": "characters remaining",
+    "skipButton": "Skip",
+    "submitButton": "Submit",
+    "submittingButton": "Submitting...",
+    "closeButton": "Close",
+    "openSurvey": "Open process survey",
+    "giveFeedback": "Give Feedback",
+    "errors": {
+      "waitTimeRequired": "Please rate the wait time",
+      "serviceRequired": "Please rate the staff service",
+      "commentMaxLength": "Comment must not exceed 500 characters",
+      "submitFailed": "Failed to submit survey",
+      "submitFailedRetry": "Failed to submit survey. Please try again.",
+      "duplicateSurvey": "You've already submitted a survey for this order",
+      "invalidRatings": "Ratings must be between 1 and 5"
+    }
+  },
+  "surveys": {
+    "managementTitle": "Process Surveys Panel",
+    "managementSubtitle": "Customer feedback on wait times and service",
+    "total": "Total Surveys",
+    "avgWaitTime": "Avg Wait Time Rating",
+    "avgService": "Avg Service Rating",
+    "withComments": "With Comments",
+    "noSurveys": "No surveys",
+    "noSurveysText": "Surveys will appear here when customers submit them",
+    "waitTimeRating": "Wait Time",
+    "serviceRating": "Staff Service",
+    "comment": "Comment:",
+    "loading": "Loading surveys...",
+    "error": "Error",
+    "retry": "Retry"
   },
   "roles": {
     "ADMIN": "Admin",
