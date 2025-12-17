@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReviewCard from '../components/ReviewCard';
+import PublicReviewForm from '../components/PublicReviewForm';
 
 /**
  * ReviewsPage Component
  *
- * Página pública que muestra el listado de reseñas aprobadas con paginación.
+ * HU-014: Página pública que muestra reseñas aprobadas y formulario para crear nuevas
  *
  * Features:
+ * - Formulario público para crear reseñas (sin login requerido)
  * - Fetch de reseñas aprobadas desde GET /reviews
  * - Paginación con botones Anterior/Siguiente
  * - Estados de carga, error y lista vacía
@@ -131,6 +133,22 @@ const ReviewsPage = () => {
               Read about our customers' experiences
             </p>
           </div>
+        </div>
+
+        {/* HU-014: Formulario Público para Crear Reseñas */}
+        <PublicReviewForm onSubmitSuccess={fetchReviews} />
+
+        {/* Divider */}
+        <div className="my-8 border-t border-gray-300"></div>
+
+        {/* Sección de Reseñas Aprobadas */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-[#222222] mb-2">
+            Reseñas de Nuestros Clientes
+          </h2>
+          <p className="text-[#666666]">
+            Lee lo que nuestros clientes dicen sobre nosotros
+          </p>
         </div>
 
         {/* Empty State */}
