@@ -78,6 +78,7 @@
   },
   "home": {
     "title": "Delicious Kitchen",
+    "adminLogin": "Admin Login",
     "orderNow": "Order Now",
     "ourStory": "Our Story",
     "featuredDishes": "Featured Dishes",
