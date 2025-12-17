@@ -61,7 +61,8 @@ function Sidebar() {
     { path: '/users', icon: 'person', label: t('sidebar.userManagement'), filled: false, roles: ['ADMIN'] },
     { path: '/kitchen', icon: 'soup_kitchen', label: t('sidebar.kitchen'), filled: false, roles: ['ADMIN', 'KITCHEN'] },
     { path: '/dashboard/analytics', icon: 'analytics', label: t('sidebar.reports'), filled: true, roles: ['ADMIN'] },
-    { path: '/admin/reviews', icon: 'reviews', label: t('sidebar.reviewManagement'), filled: false, roles: ['ADMIN'] }
+    { path: '/admin/reviews', icon: 'reviews', label: t('sidebar.reviewManagement'), filled: false, roles: ['ADMIN'] },
+    { path: '/admin/surveys', icon: 'rate_review', label: t('sidebar.surveyManagement'), filled: false, roles: ['ADMIN'] }
   ];
 
   // Only show items allowed for the current role
