@@ -9,6 +9,7 @@ import OrderStatusPage from './pages/OrderStatusPage';
 import SalesAnalyticsDashboard from './views/SalesAnalyticsDashboard';
 import ReviewsPage from './pages/ReviewsPage';
 import AdminReviewsPage from './pages/AdminReviewsPage';
+import NotFound from './pages/NotFound';
 
 import Login from './components/Login';
 import UserManagement from './modules/users/UserManagement';
@@ -66,6 +67,7 @@ function App() {
             <AdminReviewsPage />
           </ProtectedRoute>
         } />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

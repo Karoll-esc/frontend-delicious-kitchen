@@ -12,7 +12,12 @@
     "switchToSpanish": "Cambiar a Español",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "backToHome": "Back to Home"
+  },
+  "errors": {
+    "pageNotFound": "Page Not Found",
+    "pageNotFoundDescription": "Sorry, the page you are looking for does not exist or has been moved."
   },
   "orderStatusFooter": {
     "estimatedTime": "Estimated time remaining",
@@ -315,5 +320,33 @@
     "ADMIN": "Admin",
     "KITCHEN": "Kitchen",
     "WAITER": "Waiter"
+  },
+  "auth": {
+    "logout": "Logout",
+    "loggingOut": "Logging out...",
+    "logoutSuccess": "Successfully logged out",
+    "logoutError": "Error logging out. Please try again",
+    "sessionExpired": "Your session has expired. Please log in again",
+    "loginRequired": "You must log in to access this section",
+    "sessionClosed": "Your session was closed in another tab",
+    "syncLogout": "Session closed on another device",
+    "noPermissions": "You don't have permissions to access this section",
+    "verifyingSession": "Verifying session...",
+    "errors": {
+      "wrongPassword": "Invalid credentials. Check your email and password",
+      "userNotFound": "No account exists with that email",
+      "userDisabled": "Your account has been disabled. Contact the administrator",
+      "tooManyRequests": "Too many failed attempts. Try again later",
+      "invalidEmail": "Invalid email format",
+      "emailInUse": "An account with this email already exists",
+      "weakPassword": "Password must be at least 6 characters",
+      "operationNotAllowed": "This operation is not allowed",
+      "invalidCredentials": "Invalid credentials. Check your email and password",
+      "networkError": "Connection error. Check your internet connection",
+      "popupClosed": "Authentication window was closed",
+      "popupCancelled": "Authentication was cancelled",
+      "requiresRecentLogin": "For security, you must log in again",
+      "generic": "Authentication error. Please try again"
+    }
   }
 }

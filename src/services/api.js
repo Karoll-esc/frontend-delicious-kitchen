@@ -1,10 +1,12 @@
 /**
  * Servicio API para comunicación con el backend
  * Base URL configurada mediante VITE_API_URL en .env
+ * Utiliza authenticatedFetch para incluir tokens de Firebase automáticamente
  */
 
 import { getEnvVar } from '../utils/getEnvVar';
 import { normalizeOrderStatus } from '../constants/orderStates';
+import { authenticatedFetch } from '../utils/authenticatedFetch';
 
 const API_BASE_URL = getEnvVar('VITE_API_URL');
 
@@ -35,7 +37,7 @@ function normalizeOrderData(orderData) {
 }
 
 /**
- * Obtiene el estado de un pedido específico
+ * Obtiene el estado de un pedido específico (PÚBLICA - sin autenticación)
  * @param {string} orderId - ID del pedido
  * @returns {Promise<Object>} Datos del pedido normalizados
  */
@@ -73,11 +75,8 @@ export async function getKitchenOrders(status) {
 
 
 
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -154,11 +153,8 @@ export async function getKitchenOrders(status) {
 export async function getKitchenOrder(orderId) {
   try {
     const url = `${API_BASE_URL}/kitchen/orders/${orderId}`;
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -207,11 +203,8 @@ export async function getKitchenOrder(orderId) {
 export async function startPreparingOrder(orderId) {
   try {
     const url = `${API_BASE_URL}/kitchen/orders/${orderId}/start-preparing`;
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -260,11 +253,8 @@ export async function startPreparingOrder(orderId) {
 export async function markOrderAsReady(orderId) {
   try {
     const url = `${API_BASE_URL}/kitchen/orders/${orderId}/ready`;
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -496,19 +486,17 @@ export async function getPublicReviews(page = 1, limit = 10) {
 
 /**
  * Obtiene todas las reseñas (admin) con paginación
+ * PROTEGIDA - Requiere autenticación admin
  * @param {number} [page=1] - Número de página
  * @param {number} [limit=50] - Cantidad de reseñas por página
  * @returns {Promise<Object>} { reviews: [...], total: number, page: number }
  */
 export async function getAllReviews(page = 1, limit = 50) {
   try {
-    const response = await fetch(
+    const response = await authenticatedFetch(
       `${API_BASE_URL}/reviews/admin/reviews?page=${page}&limit=${limit}`,
       {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
       }
     );
 
@@ -552,13 +540,14 @@ export async function getReviewById(reviewId) {
 
 /**
  * Actualiza el estado de una reseña (admin)
+ * PROTEGIDA - Requiere autenticación admin
  * @param {string} reviewId - ID de la reseña
  * @param {string} status - Nuevo estado: 'approved', 'hidden', 'pending'
  * @returns {Promise<Object>} Datos de la reseña actualizada
  */
 export async function updateReviewStatus(reviewId, status) {
   try {
-    const response = await fetch(
+    const response = await authenticatedFetch(
       `${API_BASE_URL}/reviews/${reviewId}/status`,
       {
         method: 'PATCH',
@@ -584,6 +573,7 @@ export async function updateReviewStatus(reviewId, status) {
 
 /**
  * Obtiene las analíticas de ventas
+ * PROTEGIDA - Requiere autenticación admin
  * @param {Object} filters - Filtros para las analíticas
  * @param {string} filters.from - Fecha inicial (YYYY-MM-DD)
  * @param {string} filters.to - Fecha final (YYYY-MM-DD)
@@ -605,11 +595,8 @@ export async function getAnalytics(filters) {
 
     const url = `${API_BASE_URL}/admin/analytics?${params.toString()}`;
     
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -689,6 +676,7 @@ export async function getAnalytics(filters) {
 
 /**
  * Exporta las analíticas a CSV
+ * PROTEGIDA - Requiere autenticación admin
  * @param {Object} params - Parámetros para exportación
  * @param {string} params.from - Fecha inicial (YYYY-MM-DD)
  * @param {string} params.to - Fecha final (YYYY-MM-DD)
@@ -713,7 +701,7 @@ export async function exportAnalyticsCSV(params) {
       body.columns = params.columns;
     }
 
-    const response = await fetch(`${API_BASE_URL}/admin/analytics/export`, {
+    const response = await authenticatedFetch(`${API_BASE_URL}/admin/analytics/export`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -13,7 +13,7 @@ function OrderStatusPage() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [orderData, setOrderData] = useState(null);
-  const [refreshFunction, setRefreshFunction] = useState(() => null);
+  const [refreshFunction, setRefreshFunction] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
 
   return (

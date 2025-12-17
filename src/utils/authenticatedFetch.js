@@ -1,17 +1,62 @@
 /**
- * Utility para realizar peticiones HTTP autenticadas con token de Firebase
- * Agrega automáticamente el token JWT al header Authorization
+ * Utility para realizar peticiones HTTP autenticadas con token de Firebase (HU-005).
+ * Agrega automáticamente el token JWT al header Authorization.
+ * Maneja errores 401 redirigiendo al login cuando el token expira.
+ * Integrado con sistema de navegación SPA y traducciones i18n.
  */
 
 import { auth } from '../firebaseConfig';
+import i18n from '../i18n';
 
 /**
- * Realiza una petición fetch autenticada con el token de Firebase
+ * Maneja sesión expirada de forma centralizada (HU-005).
+ * Cierra sesión, limpia estado y redirige con parámetro de sesión expirada.
+ * 
+ * @private
+ */
+const handleSessionExpired = async () => {
+  console.warn(i18n.t('auth.sessionExpired'));
+  
+  try {
+    // 1. Cerrar sesión en Firebase
+    await auth.signOut();
+    
+    // 2. Limpiar localStorage
+    localStorage.removeItem('user');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
+    
+    // 3. Redirigir con indicador de sesión expirada
+    // Nota: Usamos window.location.href para forzar recarga completa
+    // Esto asegura que el AuthContext detecte el logout correctamente
+    window.location.href = '/login?session_expired=true';
+  } catch (error) {
+    console.error('Error al manejar sesión expirada:', error);
+    // Forzar redirección incluso si signOut falla
+    window.location.href = '/login?session_expired=true';
+  }
+};
+
+/**
+ * Realiza una petición fetch autenticada con el token de Firebase (HU-005, HU-012).
+ * Maneja automáticamente errores 401 con retry inteligente antes de redirigir al login.
+ * 
+ * Estrategia de retry (HU-012 TC-012-N01):
+ * - Primer 401: Intenta refrescar token y reintentar request
+ * - Segundo 401: Token realmente inválido, redirigir a login
+ * 
+ * Casos de prueba cubiertos:
+ * - TC-005-N01: Bloqueo después de logout
+ * - TC-005-B01: Logout con token expirado
+ * - TC-012-N01: Token expira después de 1 hora de inactividad
+ * 
  * @param {string} url - URL completa del endpoint
  * @param {Object} options - Opciones de fetch (method, body, headers, etc.)
+ * @param {boolean} isRetry - Uso interno para evitar retry infinito
  * @returns {Promise<Response>} Response de fetch
+ * @throws {Error} Si la petición falla o el token es inválido
  */
-export async function authenticatedFetch(url, options = {}) {
+export async function authenticatedFetch(url, options = {}, isRetry = false) {
   try {
     // Obtener el usuario actual de Firebase
     const currentUser = auth.currentUser;
@@ -19,7 +64,8 @@ export async function authenticatedFetch(url, options = {}) {
 
     // Si hay un usuario autenticado, obtener su token
     if (currentUser) {
-      token = await currentUser.getIdToken();
+      // En retry, forzar refresh del token (HU-012)
+      token = await currentUser.getIdToken(isRetry);
     }
 
     // Configurar headers con el token
@@ -38,6 +84,27 @@ export async function authenticatedFetch(url, options = {}) {
       ...options,
       headers,
     });
+
+    // Manejo de error 401: token expirado o inválido (HU-005, HU-012)
+    if (response.status === 401) {
+      // Si es el primer intento, intentar refrescar token y reintentar (TC-012-N01)
+      if (!isRetry && currentUser) {
+        console.warn('[Auth] Token expirado, intentando renovación automática...');
+        
+        try {
+          // Reintentar request con token renovado (isRetry=true evita loop infinito)
+          return await authenticatedFetch(url, options, true);
+        } catch (retryError) {
+          console.error('[Auth] Falló renovación automática del token:', retryError);
+          // Si falla el retry, continuar con logout
+        }
+      }
+      
+      // Si es segundo intento o no hay usuario, token realmente inválido
+      console.warn('[Auth] Token inválido después de retry, cerrando sesión...');
+      await handleSessionExpired();
+      throw new Error(i18n.t('auth.sessionExpired'));
+    }
 
     return response;
   } catch (error) {
