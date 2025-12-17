@@ -422,12 +422,13 @@ export async function cancelOrder(orderId, reason = 'Cancelado por el cliente') 
 // ==================== REVIEW API FUNCTIONS ====================
 
 /**
- * Crea una nueva reseña para un pedido
+ * Crea una nueva reseña (HU-014: Sistema de Reseñas Públicas)
  * @param {Object} reviewData - Datos de la reseña
- * @param {string} reviewData.orderId - ID del pedido (requerido)
+ * @param {string} [reviewData.orderNumber] - Número de pedido (OPCIONAL, puede ser "N/A")
  * @param {string} reviewData.customerName - Nombre del cliente (requerido)
- * @param {number} reviewData.overallRating - Calificación general 1-5 (requerido)
+ * @param {string} reviewData.customerEmail - Email del cliente (requerido)
  * @param {number} reviewData.foodRating - Calificación de comida 1-5 (requerido)
+ * @param {number} reviewData.tasteRating - Calificación de sabor 1-5 (requerido)
  * @param {string} [reviewData.comment] - Comentario opcional (max 500 chars)
  * @returns {Promise<Object>} Datos de la reseña creada
  */
@@ -756,6 +757,102 @@ export async function exportAnalyticsCSV(params) {
     }
     
     console.error('Error en exportAnalyticsCSV:', error);
+    throw error;
+  }
+}
+
+// ==================== SURVEYS (HU-013) ====================
+
+/**
+ * Obtiene todas las encuestas de proceso (admin)
+ * Endpoint protegido que requiere autenticación Firebase y rol Admin
+ * 
+ * @param {number} [page=1] - Número de página
+ * @param {number} [limit=20] - Cantidad de encuestas por página
+ * @returns {Promise<Object>} { surveys: [...], total: number, page: number, totalPages: number }
+ */
+export async function getAllSurveys(page = 1, limit = 20) {
+  try {
+    const response = await authenticatedFetch(
+      `${API_BASE_URL}/surveys?page=${page}&limit=${limit}`,
+      {
+        method: 'GET',
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener las encuestas: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error en getAllSurveys:', error);
+    throw error;
+  }
+}
+
+/**
+ * Verifica si existe una encuesta para un pedido específico
+ * Endpoint público
+ * 
+ * @param {string} orderNumber - Número de pedido
+ * @returns {Promise<Object>} { success: boolean, hasSurvey: boolean }
+ */
+export async function checkSurveyExists(orderNumber) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/surveys/check/${orderNumber}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al verificar encuesta: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error en checkSurveyExists:', error);
+    throw error;
+  }
+}
+
+/**
+ * Crea una nueva encuesta de proceso
+ * Endpoint público (cliente durante preparación/ready)
+ * 
+ * @param {Object} surveyData - Datos de la encuesta
+ * @param {string} surveyData.orderNumber - Número de pedido
+ * @param {string} surveyData.customerName - Nombre del cliente
+ * @param {string} surveyData.customerEmail - Email del cliente
+ * @param {number} surveyData.waitTimeRating - Calificación tiempo de espera (1-5)
+ * @param {number} surveyData.serviceRating - Calificación servicio (1-5)
+ * @param {string} [surveyData.comment] - Comentario opcional
+ * @returns {Promise<Object>} { success: boolean, message: string, data: Survey }
+ */
+export async function createSurvey(surveyData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/surveys`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(surveyData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const error = new Error(data.message || 'Error al crear la encuesta');
+      error.status = response.status;
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error en createSurvey:', error);
     throw error;
   }
 }

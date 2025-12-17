@@ -34,7 +34,6 @@ describe('Role Translations (HU-017)', () => {
       
       expect(i18n.t('roles.ADMIN')).toBe('Administrador');
       expect(i18n.t('roles.KITCHEN')).toBe('Cocina');
-      expect(i18n.t('roles.WAITER')).toBe('Mesero');
     });
 
     it('debe tener traducciones para todos los roles en inglés', async () => {
@@ -42,7 +41,6 @@ describe('Role Translations (HU-017)', () => {
       
       expect(i18n.t('roles.ADMIN')).toBe('Admin');
       expect(i18n.t('roles.KITCHEN')).toBe('Kitchen');
-      expect(i18n.t('roles.WAITER')).toBe('Waiter');
     });
 
     it('no debe retornar claves de traducción sin resolver', async () => {
@@ -51,7 +49,6 @@ describe('Role Translations (HU-017)', () => {
       // Las traducciones no deben retornar la clave misma
       expect(i18n.t('roles.ADMIN')).not.toBe('roles.ADMIN');
       expect(i18n.t('roles.KITCHEN')).not.toBe('roles.KITCHEN');
-      expect(i18n.t('roles.WAITER')).not.toBe('roles.WAITER');
     });
   });
 
@@ -78,13 +75,8 @@ describe('Role Translations (HU-017)', () => {
       expect(translation).toBe('Kitchen');
     });
 
-    it('debe mostrar "Waiter" para el rol WAITER en inglés', () => {
-      const translation = getRoleTranslation('WAITER', i18n.t);
-      expect(translation).toBe('Waiter');
-    });
-
     it('las traducciones deben ser profesionales (primera letra mayúscula)', async () => {
-      const roles = ['ADMIN', 'KITCHEN', 'WAITER'];
+      const roles = ['ADMIN', 'KITCHEN'];
       
       roles.forEach(role => {
         const translation = getRoleTranslation(role, i18n.t);
@@ -119,13 +111,8 @@ describe('Role Translations (HU-017)', () => {
       expect(translation).toBe('Cocina');
     });
 
-    it('debe mostrar "Mesero" para el rol WAITER en español', () => {
-      const translation = getRoleTranslation('WAITER', i18n.t);
-      expect(translation).toBe('Mesero');
-    });
-
     it('las traducciones deben ser consistentes (primera letra mayúscula)', async () => {
-      const roles = ['ADMIN', 'KITCHEN', 'WAITER'];
+      const roles = ['ADMIN', 'KITCHEN'];
       
       roles.forEach(role => {
         const translation = getRoleTranslation(role, i18n.t);
@@ -164,22 +151,10 @@ describe('Role Translations (HU-017)', () => {
       expect(translation).toBe('Cocina');
     });
 
-    it('debe cambiar traducción de WAITER al alternar idiomas múltiples veces', async () => {
-      // Español → Inglés → Español
-      await i18n.changeLanguage('es');
-      expect(getRoleTranslation('WAITER', i18n.t)).toBe('Mesero');
-
-      await i18n.changeLanguage('en');
-      expect(getRoleTranslation('WAITER', i18n.t)).toBe('Waiter');
-
-      await i18n.changeLanguage('es');
-      expect(getRoleTranslation('WAITER', i18n.t)).toBe('Mesero');
-    });
-
     it('debe actualizar todas las traducciones al cambiar idioma', async () => {
-      const roles = ['ADMIN', 'KITCHEN', 'WAITER'];
-      const expectedES = ['Administrador', 'Cocina', 'Mesero'];
-      const expectedEN = ['Admin', 'Kitchen', 'Waiter'];
+      const roles = ['ADMIN', 'KITCHEN'];
+      const expectedES = ['Administrador', 'Cocina'];
+      const expectedEN = ['Admin', 'Kitchen'];
 
       // Verificar en español
       await i18n.changeLanguage('es');

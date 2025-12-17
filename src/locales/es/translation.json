@@ -126,7 +126,8 @@
     "userManagement": "Panel de administración",
     "kitchen": "Cocina",
     "reports": "Reportes",
-    "reviewManagement": "Gestión de reseñas"
+    "reviewManagement": "Gestión de reseñas",
+    "surveyManagement": "Encuestas de proceso"
   },
   "login": {
     "adminPanel": "Panel de administración",
@@ -194,7 +195,6 @@
     "roleLabel": "Rol",
     "roleAdmin": "Administrador",
     "roleKitchen": "Cocina",
-    "roleWaiter": "Mesero",
     "notFound": "Usuario no encontrado",
     "loadError": "Error al cargar usuario",
     "deleteConfirm": "¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.",
@@ -328,10 +328,52 @@
       "submitFailedRetry": "Error al enviar la reseña. Por favor intenta de nuevo."
     }
   },
+  "surveyModal": {
+    "title": "¿Cómo va tu pedido?",
+    "thankYouTitle": "¡Gracias por tu opinión!",
+    "successMessage": "Tu encuesta ha sido enviada exitosamente",
+    "orderNumberPrefix": "Pedido #",
+    "introMessage": "Tu opinión nos ayuda a mejorar. Esta encuesta es opcional.",
+    "waitTimeLabel": "Tiempo de espera",
+    "serviceLabel": "Atención del personal",
+    "commentsLabel": "Comentarios adicionales (Opcional)",
+    "commentsPlaceholder": "¿Algo que quieras contarnos?",
+    "charactersRemaining": "caracteres restantes",
+    "skipButton": "Omitir",
+    "submitButton": "Enviar",
+    "submittingButton": "Enviando...",
+    "closeButton": "Cerrar",
+    "openSurvey": "Abrir encuesta de proceso",
+    "giveFeedback": "Dar feedback",
+    "errors": {
+      "waitTimeRequired": "Por favor califica el tiempo de espera",
+      "serviceRequired": "Por favor califica la atención del personal",
+      "commentMaxLength": "El comentario no debe exceder los 500 caracteres",
+      "submitFailed": "Error al enviar la encuesta",
+      "submitFailedRetry": "Error al enviar la encuesta. Por favor intenta de nuevo.",
+      "duplicateSurvey": "Ya enviaste tu opinión para este pedido",
+      "invalidRatings": "Los ratings deben estar entre 1 y 5"
+    }
+  },
+  "surveys": {
+    "managementTitle": "Panel de Encuestas de Proceso",
+    "managementSubtitle": "Feedback de clientes sobre tiempos de espera y atención",
+    "total": "Total Encuestas",
+    "avgWaitTime": "Promedio Tiempo de Espera",
+    "avgService": "Promedio Servicio",
+    "withComments": "Con Comentarios",
+    "noSurveys": "No hay encuestas",
+    "noSurveysText": "Las encuestas aparecerán aquí cuando los clientes las envíen",
+    "waitTimeRating": "Tiempo de Espera",
+    "serviceRating": "Atención del Personal",
+    "comment": "Comentario:",
+    "loading": "Cargando encuestas...",
+    "error": "Error",
+    "retry": "Reintentar"
+  },
   "roles": {
     "ADMIN": "Administrador",
-    "KITCHEN": "Cocina",
-    "WAITER": "Mesero"
+    "KITCHEN": "Cocina"
   },
   "auth": {
     "logout": "Cerrar sesión",
