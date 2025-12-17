@@ -641,8 +641,38 @@ export async function getAnalytics(filters) {
       throw error;
     }
 
-    const data = await response.json();
-    return data;
+    // Verificar si hay contenido antes de parsear JSON
+    const contentLength = response.headers.get('content-length');
+    if (contentLength === '0' || response.status === 204) {
+      return {
+        message: 'No hay datos disponibles para el período seleccionado',
+        range: { from: filters.from, to: filters.to, groupBy: filters.groupBy },
+        summary: { totalOrders: 0, totalRevenue: 0, avgPrepTime: null },
+        series: [],
+        productsSold: [],
+        topNProducts: []
+      };
+    }
+
+    const text = await response.text();
+    if (!text || text.trim() === '') {
+      return {
+        message: 'No hay datos disponibles para el período seleccionado',
+        range: { from: filters.from, to: filters.to, groupBy: filters.groupBy },
+        summary: { totalOrders: 0, totalRevenue: 0, avgPrepTime: null },
+        series: [],
+        productsSold: [],
+        topNProducts: []
+      };
+    }
+
+    try {
+      const data = JSON.parse(text);
+      return data;
+    } catch (parseError) {
+      console.error('Error parseando JSON de analytics:', text);
+      throw new Error('Respuesta inválida del servidor. Por favor, intenta nuevamente.');
+    }
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
       const networkError = new Error(
