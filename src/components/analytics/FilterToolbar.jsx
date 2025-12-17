@@ -27,6 +27,11 @@ function FilterToolbar({ filters, onFilterChange, onQuery, onExport, loading }) 
             id="from-date"
             type="date"
             value={filters.from}
+            min={(() => {
+              const date = new Date();
+              date.setFullYear(date.getFullYear() - 10);
+              return date.toISOString().split('T')[0];
+            })()}
             max={new Date().toISOString().split('T')[0]}
             onChange={(e) => handleInputChange('from', e.target.value)}
           />

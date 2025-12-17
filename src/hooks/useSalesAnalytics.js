@@ -41,7 +41,7 @@ export const useSalesAnalytics = () => {
     try {
       await exportAnalyticsCSV({
         ...filters,
-        columns: ['period', 'totalOrders', 'totalRevenue', 'productId', 'productName', 'quantity', 'avgPrepTime']
+        columns: ['period', 'totalOrders', 'totalCancelled', 'totalRevenue', 'lostRevenue']
       });
     } catch (err) {
       throw new Error(err.message || 'Error al exportar CSV');

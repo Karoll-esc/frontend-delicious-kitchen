@@ -110,8 +110,7 @@ function SalesAnalyticsDashboard() {
         totalOrders: seriesItem.totalOrders,
         totalCancelled: cancelled.totalCancelled,
         totalRevenue: seriesItem.totalRevenue,
-        lostRevenue: cancelled.lostRevenue,
-        avgPrepTime: seriesItem.avgPrepTime
+        lostRevenue: cancelled.lostRevenue
       };
     });
   };
