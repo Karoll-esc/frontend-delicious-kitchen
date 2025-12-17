@@ -71,6 +71,43 @@ export async function deactivateUser(id) {
 }
 
 /**
+ * Reactiva un usuario desactivado (HU-009)
+ * @param {string} id - UID del usuario
+ * @returns {Promise<Object>} Confirmación de reactivación
+ */
+export async function activateUser(id) {
+  const res = await authenticatedFetch(`${API_BASE_URL}/users/${id}/enable`, {
+    method: 'PATCH',
+  });
+  if (!res.ok) throw new Error('Error al reactivar usuario');
+  return await res.json();
+}
+
+/**
+ * Ejecuta auditoría de sincronización Auth ↔ Firestore (HU-009)
+ * @returns {Promise<Object>} Resultado de la auditoría
+ */
+export async function auditUserSync() {
+  const res = await authenticatedFetch(`${API_BASE_URL}/users/audit/sync`, {
+    method: 'GET',
+  });
+  if (!res.ok) throw new Error('Error al ejecutar auditoría');
+  return await res.json();
+}
+
+/**
+ * Migra usuarios de Auth a Firestore (HU-009)
+ * @returns {Promise<Object>} Resultado de la migración
+ */
+export async function migrateUsers() {
+  const res = await authenticatedFetch(`${API_BASE_URL}/users/migrate`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('Error al migrar usuarios');
+  return await res.json();
+}
+
+/**
  * Restablece la contraseña de un usuario
  * @param {string} id - UID del usuario
  * @returns {Promise<Object>} Confirmación de restablecimiento
