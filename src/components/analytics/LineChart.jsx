@@ -67,35 +67,45 @@ function LineChart({ data, title, subtitle, value, change }) {
 
 /**
  * Genera puntos SVG path desde datos de series
+ * Escalado mejorado para evitar línea pegada al eje X
  */
 function generatePathPoints(data) {
   if (!data || data.length === 0) {
     return 'M0 75 L500 75'; // Línea plana si no hay datos
   }
 
-  // Si solo hay un punto, crear una línea horizontal en ese valor
-  if (data.length === 1) {
-    const width = 500;
-    const height = 150;
-    const padding = 10;
-    const y = height - padding - (data[0].value || 0) * 2; // Escalado simple
-    return `M0 ${y} L${width} ${y}`;
-  }
-
   const width = 500;
   const height = 150;
-  const padding = 10;
+  const padding = 20; // Aumentar padding
+  const minY = padding;
+  const maxY = height - padding;
   
-  const maxValue = Math.max(...data.map(d => d.value || 0)) || 1;
-  const minValue = Math.min(...data.map(d => d.value || 0)) || 0;
-  const range = maxValue - minValue || 1;
+  const maxValue = Math.max(...data.map(d => d.value || 0));
+  const minValue = Math.min(...data.map(d => d.value || 0));
+  
+  // Si todos los valores son iguales o muy cercanos
+  if (maxValue === minValue || maxValue - minValue < 0.01) {
+    const y = height / 2; // Línea en el medio
+    if (data.length === 1) {
+      return `M0 ${y} L${width} ${y}`;
+    }
+    const points = data.map((_, index) => {
+      const x = (index / (data.length - 1)) * width;
+      return `${index === 0 ? 'M' : 'L'}${x} ${y}`;
+    }).join(' ');
+    return points;
+  }
+  
+  // Normalización mejorada con margen
+  const range = maxValue - minValue;
+  const margin = range * 0.1; // 10% de margen adicional
   
   const points = data.map((point, index) => {
-    const x = (index / (data.length - 1 || 1)) * width;
-    const normalizedValue = ((point.value - minValue) / range);
-    const y = height - padding - (normalizedValue * (height - 2 * padding));
+    const x = data.length === 1 ? width / 2 : (index / (data.length - 1)) * width;
+    const normalizedValue = (point.value - minValue) / (range + margin);
+    const y = maxY - (normalizedValue * (maxY - minY));
     
-    return `${index === 0 ? 'M' : 'L'}${x} ${y}`;
+    return `${index === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`;
   }).join(' ');
   
   return points;

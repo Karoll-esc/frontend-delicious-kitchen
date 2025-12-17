@@ -78,18 +78,10 @@ function FilterToolbar({ filters, onFilterChange, onQuery, onExport, loading }) 
         <button
           onClick={onExport}
           disabled={loading}
-          className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-transparent text-[#111813] dark:text-white border border-gray-300 dark:border-gray-700 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-        >
-          <span className="material-symbols-outlined text-xl">ios_share</span>
-          <span className="truncate">{t('analytics.exportCsv', 'Export CSV')}</span>
-        </button>
-        <button
-          onClick={onQuery}
-          disabled={loading}
           className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary text-black gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
-          <span className="material-symbols-outlined text-xl">query_stats</span>
-          <span className="truncate">{loading ? t('analytics.loading', 'Loading analytics...') : t('analytics.viewMetrics', 'View metrics')}</span>
+          <span className="material-symbols-outlined text-xl">ios_share</span>
+          <span className="truncate">{t('analytics.exportCsv', 'Exportar CSV')}</span>
         </button>
       </div>
     </div>
@@ -104,7 +96,6 @@ FilterToolbar.propTypes = {
     top: PropTypes.number
   }).isRequired,
   onFilterChange: PropTypes.func.isRequired,
-  onQuery: PropTypes.func.isRequired,
   onExport: PropTypes.func.isRequired,
   loading: PropTypes.bool
 };

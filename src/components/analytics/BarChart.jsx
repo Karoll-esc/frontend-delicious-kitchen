@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
  * Componente de gráfico de barras vertical
  * Muestra top N productos más vendidos
  */
-function BarChart({ data, title, value, change }) {
+function BarChart({ data, title, subtitle, value, change }) {
   const maxValue = Math.max(...data.map(d => d.quantity || 0)) || 1;
   
   return (
@@ -16,15 +16,17 @@ function BarChart({ data, title, value, change }) {
         <p className="text-[#111813] dark:text-white tracking-light text-[32px] font-bold leading-tight truncate">
           {value?.toLocaleString('es-CO') || '0'}
         </p>
-        {change !== null && (
+        {change !== null && change !== undefined && (
           <p className={`${change >= 0 ? 'text-[#078829] dark:text-green-400' : 'text-[#e72a08] dark:text-red-400'} text-base font-medium leading-normal`}>
             {change >= 0 ? '+' : ''}{change}%
           </p>
         )}
       </div>
-      <p className="text-[#63886f] dark:text-gray-400 text-base font-normal leading-normal">
-        Últimos 30 días
-      </p>
+      {subtitle && (
+        <p className="text-[#63886f] dark:text-gray-400 text-base font-normal leading-normal">
+          {subtitle}
+        </p>
+      )}
       <div className="grid min-h-[220px] grid-flow-col gap-6 grid-rows-[1fr_auto] items-end justify-items-center px-3 pt-4">
         {data.map((item, index) => {
           const heightPercentage = (item.quantity / maxValue) * 100;
@@ -55,6 +57,7 @@ BarChart.propTypes = {
     })
   ).isRequired,
   title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string,
   value: PropTypes.number,
   change: PropTypes.number
 };

@@ -12,7 +12,7 @@ import DataTable from '../../components/analytics/DataTable';
  * Implementa arquitectura modular con separación de responsabilidades
  */
 function SalesAnalyticsDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data, loading, error, filters, updateFilters, refetch, exportToCSV } = useSalesAnalytics();
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -30,6 +30,34 @@ function SalesAnalyticsDashboard() {
     } finally {
       setExportLoading(false);
     }
+  };
+
+  /**
+   * Calcular texto dinámico del rango de fechas seleccionado
+   * Muestra el rango real de fechas en formato legible
+   * Respeta el idioma activo del i18n
+   */
+  const getDateRangeLabel = () => {
+    const from = new Date(filters.from);
+    const to = new Date(filters.to);
+    
+    // Determinar locale según idioma activo
+    const locale = i18n.language === 'es' ? 'es-CO' : 'en-US';
+    
+    // Formatear fechas respetando el idioma
+    const formatDate = (date) => date.toLocaleDateString(locale, { 
+      day: '2-digit', 
+      month: 'short',
+      year: from.getFullYear() !== to.getFullYear() ? 'numeric' : undefined
+    });
+    
+    // Si son el mismo día
+    if (filters.from === filters.to) {
+      return formatDate(from);
+    }
+    
+    // Rango de fechas
+    return `${formatDate(from)} - ${formatDate(to)}`;
   };
 
   /**
@@ -57,49 +85,26 @@ function SalesAnalyticsDashboard() {
 
   /**
    * Preparar datos para tabla combinando series y productos
+   * El backend ya filtra por rango de fechas, no necesitamos filtrar aquí
    */
   const getTableData = () => {
     if (!data?.series || !data?.productsSold) return [];
 
-    // Filtrar periodos por rango seleccionado
-    const fromDate = new Date(filters.from);
-    const toDate = new Date(filters.to);
-
     const tableRows = [];
+    
+    // Combinar cada período de series con cada producto vendido
     data.series.forEach(seriesItem => {
-      // El periodo puede ser 'YYYY-MM-DD', 'YYYY-MM', etc. según groupBy
-      let periodDate;
-      if (filters.groupBy === 'day') {
-        periodDate = new Date(seriesItem.period);
-      } else if (filters.groupBy === 'month') {
-        // Parse 'YYYY-MM' as first day of month
-        const [year, month] = seriesItem.period.split('-');
-        periodDate = new Date(Number(year), Number(month) - 1, 1);
-      } else if (filters.groupBy === 'year') {
-        periodDate = new Date(Number(seriesItem.period), 0, 1);
-      } else if (filters.groupBy === 'week') {
-        // Parse 'YYYY-WW' as first day of ISO week
-        const [year, week] = seriesItem.period.split('-');
-        // ISO week: set to first day of week
-        const simple = new Date(Number(year), 0, 1 + (Number(week) - 1) * 7);
-        periodDate = simple;
-      } else {
-        periodDate = new Date(seriesItem.period);
-      }
-
-      if (periodDate >= fromDate && periodDate <= toDate) {
-        data.productsSold.forEach(product => {
-          tableRows.push({
-            period: seriesItem.period,
-            totalOrders: seriesItem.totalOrders,
-            totalRevenue: seriesItem.totalRevenue,
-            productId: product.productId,
-            productName: product.name,
-            quantity: product.quantity,
-            avgPrepTime: seriesItem.avgPrepTime
-          });
+      data.productsSold.forEach(product => {
+        tableRows.push({
+          period: seriesItem.period,
+          totalOrders: seriesItem.totalOrders,
+          totalRevenue: seriesItem.totalRevenue,
+          productId: product.productId,
+          productName: product.name,
+          quantity: product.quantity,
+          avgPrepTime: seriesItem.avgPrepTime
         });
-      }
+      });
     });
 
     return tableRows;
@@ -131,7 +136,6 @@ function SalesAnalyticsDashboard() {
             <FilterToolbar
               filters={filters}
               onFilterChange={updateFilters}
-              onQuery={refetch}
               onExport={handleExport}
               loading={loading || exportLoading}
             />
@@ -209,15 +213,16 @@ function SalesAnalyticsDashboard() {
                   <LineChart
                     data={getLineChartData()}
                     title={t('analytics.ordersPerPeriod', 'Órdenes por período')}
-                    subtitle={t('analytics.last30Days', 'Últimos 30 días')}
+                    subtitle={getDateRangeLabel()}
                     value={data.summary?.totalOrders}
-                    change={12.5}
+                    change={null}
                   />
                   <BarChart
                     data={getBarChartData()}
                     title={t('analytics.topProductsSold', 'Top productos vendidos')}
+                    subtitle={getDateRangeLabel()}
                     value={data.productsSold?.reduce((sum, p) => sum + p.quantity, 0) || 0}
-                    change={8.2}
+                    change={null}
                   />
                 </div>
 
