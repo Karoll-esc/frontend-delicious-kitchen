@@ -163,13 +163,22 @@ function SalesAnalyticsDashboard() {
             {!loading && !error && data && (
               <>
                 {/* Stats Cards */}
-                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {/* HU-022: StatCards actualizadas con métricas de cancelados separadas */}
+                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
                   <StatCard
-                    title={t('analytics.totalOrders', 'Total de órdenes')}
+                    title={t('analytics.totalOrdersCompleted', 'Órdenes Finalizadas')}
                     value={data.summary?.totalOrders || 0}
                     change={data.summary?.totalOrdersChange ?? null}
-                    icon="shopping_cart"
+                    icon="check_circle"
                     format="number"
+                  />
+                  <StatCard
+                    title={t('analytics.totalCancelled', 'Órdenes Canceladas')}
+                    value={data.summary?.totalCancelled || 0}
+                    change={null}
+                    icon="cancel"
+                    format="number"
+                    variant="warning"
                   />
                   <StatCard
                     title={t('analytics.totalIncome', 'Ingresos totales')}
@@ -179,11 +188,12 @@ function SalesAnalyticsDashboard() {
                     format="currency"
                   />
                   <StatCard
-                    title={t('analytics.productsSold', 'Productos vendidos')}
-                    value={data.productsSold?.reduce((sum, p) => sum + p.quantity, 0) || 0}
-                    change={data.summary?.totalProductsSoldChange ?? null}
-                    icon="inventory_2"
-                    format="number"
+                    title={t('analytics.lostRevenue', 'Ingresos Perdidos')}
+                    value={data.summary?.lostRevenue || 0}
+                    change={null}
+                    icon="money_off"
+                    format="currency"
+                    variant="danger"
                   />
                   <StatCard
                     title={t('analytics.topProduct', 'Producto destacado')}
