@@ -28,6 +28,14 @@ function KitchenView() {
   const [newOrderModal, setNewOrderModal] = useState(false);
   const [newOrderNumber, setNewOrderNumber] = useState('');
 
+  // Estado para modal de pedido cancelado
+  const [cancelledOrderModal, setCancelledOrderModal] = useState(false);
+  const [cancelledOrderData, setCancelledOrderData] = useState({
+    orderNumber: '',
+    reason: '',
+    cancelledBy: ''
+  });
+
   // Cargar pedidos
   const loadOrders = useCallback(async () => {
     try {
@@ -72,7 +80,27 @@ function KitchenView() {
       setNewOrderNumber(orderNum);
       setNewOrderModal(true);
     }
-  }, []);
+
+    // order.cancelled - Pedido cancelado
+    if (notification.eventType === 'order.cancelled') {
+      const orderNum = notification.orderNumber || notification.orderId || 'N/A';
+      const reason = notification.data?.reason || notification.data?.cancellationReason || 'Sin razón especificada';
+      const cancelledBy = notification.data?.cancelledBy || 'customer';
+      
+      setCancelledOrderData({
+        orderNumber: orderNum,
+        reason: reason,
+        cancelledBy: cancelledBy === 'admin' ? 'Administrador' : 'Cliente'
+      });
+      setCancelledOrderModal(true);
+
+      // Auto-cerrar modal después de 3 segundos y refrescar lista
+      setTimeout(async () => {
+        setCancelledOrderModal(false);
+        await loadOrders();
+      }, 3000);
+    }
+  }, [loadOrders]);
 
   // Conectar a notificaciones (sin filtro de orderId, todas las notificaciones)
   useNotifications(handleNotification, []);
@@ -176,6 +204,21 @@ function KitchenView() {
         message={t('kitchen.newOrderMessage', { order: newOrderNumber })}
         onAccept={handleAcceptNewOrder}
         acceptText={t('kitchen.viewOrder')}
+      />
+
+      {/* Modal: Pedido cancelado */}
+      <NotificationModal
+        isOpen={cancelledOrderModal}
+        type="warning"
+        title="Pedido Cancelado"
+        message={
+          `El pedido ${cancelledOrderData.orderNumber} ha sido cancelado.\n\n` +
+          `Cancelado por: ${cancelledOrderData.cancelledBy}\n` +
+          `Razón: ${cancelledOrderData.reason}`
+        }
+        onAccept={() => setCancelledOrderModal(false)}
+        acceptText="Entendido"
+        autoClose={3000}
       />
     </>
   );

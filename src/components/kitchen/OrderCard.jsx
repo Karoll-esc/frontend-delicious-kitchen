@@ -118,6 +118,15 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
             {t('kitchen.completed')}
           </button>
         )}
+
+        {order.status === ORDER_STATUS.CANCELLED && (
+          <button
+            disabled
+            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-200 text-red-800 rounded-lg text-xs sm:text-sm font-medium cursor-not-allowed whitespace-nowrap"
+          >
+            Cancelado
+          </button>
+        )}
       </div>
     </div>
   );
