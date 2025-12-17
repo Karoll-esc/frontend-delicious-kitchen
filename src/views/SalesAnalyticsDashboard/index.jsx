@@ -84,30 +84,36 @@ function SalesAnalyticsDashboard() {
   };
 
   /**
-   * Preparar datos para tabla combinando series y productos
-   * El backend ya filtra por rango de fechas, no necesitamos filtrar aquí
+   * Preparar datos para tabla mostrando resumen completo por período
+   * Combina métricas de órdenes completadas y canceladas
    */
   const getTableData = () => {
-    if (!data?.series || !data?.productsSold) return [];
+    if (!data?.series) return [];
 
-    const tableRows = [];
-    
-    // Combinar cada período de series con cada producto vendido
-    data.series.forEach(seriesItem => {
-      data.productsSold.forEach(product => {
-        tableRows.push({
-          period: seriesItem.period,
-          totalOrders: seriesItem.totalOrders,
-          totalRevenue: seriesItem.totalRevenue,
-          productId: product.productId,
-          productName: product.name,
-          quantity: product.quantity,
-          avgPrepTime: seriesItem.avgPrepTime
+    // Crear mapa de cancelados por período para merge eficiente
+    const cancelledMap = new Map();
+    if (data.cancelledSeries) {
+      data.cancelledSeries.forEach(cancelled => {
+        cancelledMap.set(cancelled.period, {
+          totalCancelled: cancelled.totalCancelled,
+          lostRevenue: cancelled.lostRevenue
         });
       });
-    });
+    }
 
-    return tableRows;
+    // Combinar series completadas con canceladas por período
+    return data.series.map(seriesItem => {
+      const cancelled = cancelledMap.get(seriesItem.period) || { totalCancelled: 0, lostRevenue: 0 };
+      
+      return {
+        period: seriesItem.period,
+        totalOrders: seriesItem.totalOrders,
+        totalCancelled: cancelled.totalCancelled,
+        totalRevenue: seriesItem.totalRevenue,
+        lostRevenue: cancelled.lostRevenue,
+        avgPrepTime: seriesItem.avgPrepTime
+      };
+    });
   };
 
   return (

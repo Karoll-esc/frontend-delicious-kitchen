@@ -224,6 +224,7 @@
     "productId": "Product ID",
     "productName": "Product Name",
     "quantity": "Quantity",
+    "avgPrepTime": "Avg Prep Time",
     "noTableData": "No data is available for the selected period.",
     "rowsPerPage": "Rows per page:",
     "from": "From",
