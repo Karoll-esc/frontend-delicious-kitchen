@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import StarRating from './StarRating';
+import { getEnvVar } from '../utils/getEnvVar';
 
 /**
  * Modal para enviar encuestas de proceso (durante preparación)
@@ -71,7 +72,7 @@ export default function SurveyModal({
     setErrors({});
 
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL;
+      const API_BASE_URL = getEnvVar('VITE_API_URL');
 
       const surveyData = {
         orderNumber: orderData.orderNumber,
