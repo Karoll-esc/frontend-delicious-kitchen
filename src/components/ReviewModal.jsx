@@ -70,13 +70,17 @@ export default function ReviewModal({
     try {
       const API_BASE_URL = getEnvVar('VITE_API_URL');
 
+      // Mapear datos del frontend al formato esperado por el backend
       const reviewData = {
-        orderId: orderData.orderId,
-        customerName: orderData.customerName || orderData.customer,
+        orderNumber: orderData.orderNumber || 'N/A',
+        customerName: orderData.customerName || orderData.customer || 'Anonymous',
         customerEmail: orderData.customerEmail || 'customer@example.com',
-        ratings,
+        foodRating: parseInt(ratings.food) || 0,      // ✅ Convertir explícitamente a entero
+        tasteRating: parseInt(ratings.overall) || 0,  // ✅ Convertir explícitamente a entero
         comment: comment.trim()
       };
+
+      console.log('📤 Enviando reseña:', reviewData); // Debug
 
 
 
