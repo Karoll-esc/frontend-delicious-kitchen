@@ -14,9 +14,8 @@ import OrderStatus from '../components/OrderStatus';
 import '../i18n';
 
 // Mock básico del hook de notificaciones
-jest.mock('../hooks/useNotifications', () => ({
-  __esModule: true,
-  default: () => {}
+jest.mock('../hooks/useNotification', () => ({
+  useNotifications: jest.fn(() => {})
 }));
 
 describe('HU-007: Deshabilitar botón de cancelación según estado del pedido', () => {

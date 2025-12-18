@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import StarRating from './StarRating';
+import { getEnvVar } from '../utils/getEnvVar';
 
 /**
  * Modal para enviar reseñas de pedidos
@@ -67,7 +68,7 @@ export default function ReviewModal({
     setErrors({});
 
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL;
+      const API_BASE_URL = getEnvVar('VITE_API_URL');
 
       const reviewData = {
         orderId: orderData.orderId,

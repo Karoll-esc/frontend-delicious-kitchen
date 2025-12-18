@@ -216,11 +216,10 @@ describe('Role Translations (HU-017)', () => {
       await i18n.changeLanguage('es');
       const roles = getAllRoleTranslations(i18n.t);
       
-      expect(roles).toHaveLength(3);
+      expect(roles).toHaveLength(2);
       expect(roles).toEqual([
         { value: 'ADMIN', label: 'Administrador' },
-        { value: 'KITCHEN', label: 'Cocina' },
-        { value: 'WAITER', label: 'Mesero' }
+        { value: 'KITCHEN', label: 'Cocina' }
       ]);
     });
 
@@ -228,11 +227,10 @@ describe('Role Translations (HU-017)', () => {
       await i18n.changeLanguage('en');
       const roles = getAllRoleTranslations(i18n.t);
       
-      expect(roles).toHaveLength(3);
+      expect(roles).toHaveLength(2);
       expect(roles).toEqual([
         { value: 'ADMIN', label: 'Admin' },
-        { value: 'KITCHEN', label: 'Kitchen' },
-        { value: 'WAITER', label: 'Waiter' }
+        { value: 'KITCHEN', label: 'Kitchen' }
       ]);
     });
 
