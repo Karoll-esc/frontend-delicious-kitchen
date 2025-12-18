@@ -55,7 +55,15 @@ function DataTable({ data = [] }) {
                   onClick={() => handleSort('totalOrders')}
                   className="flex items-center gap-1 hover:text-primary transition-colors"
                 >
-                  {t('analytics.totalOrders', 'Total Orders')} <span className="material-symbols-outlined text-base">swap_vert</span>
+                  {t('analytics.totalOrdersCompleted', 'Completed Orders')} <span className="material-symbols-outlined text-base">swap_vert</span>
+                </button>
+              </th>
+              <th className="px-6 py-3" scope="col">
+                <button
+                  onClick={() => handleSort('totalCancelled')}
+                  className="flex items-center gap-1 hover:text-primary transition-colors"
+                >
+                  {t('analytics.totalCancelled', 'Cancelled Orders')} <span className="material-symbols-outlined text-base">swap_vert</span>
                 </button>
               </th>
               <th className="px-6 py-3" scope="col">
@@ -66,15 +74,20 @@ function DataTable({ data = [] }) {
                   {t('analytics.totalIncome', 'Total Income')} <span className="material-symbols-outlined text-base">swap_vert</span>
                 </button>
               </th>
-              <th className="px-6 py-3" scope="col">{t('analytics.productId', 'Product ID')}</th>
-              <th className="px-6 py-3" scope="col">{t('analytics.productName', 'Product Name')}</th>
-              <th className="px-6 py-3" scope="col">{t('analytics.quantity', 'Quantity')}</th>
+              <th className="px-6 py-3" scope="col">
+                <button
+                  onClick={() => handleSort('lostRevenue')}
+                  className="flex items-center gap-1 hover:text-primary transition-colors"
+                >
+                  {t('analytics.lostRevenue', 'Lost Revenue')} <span className="material-symbols-outlined text-base">swap_vert</span>
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                   {t('analytics.noTableData', 'No data is available for the selected period.')}
                 </td>
               </tr>
@@ -88,10 +101,17 @@ function DataTable({ data = [] }) {
                     {row.period || 'N/A'}
                   </td>
                   <td className="px-6 py-4">{row.totalOrders || 0}</td>
+                  <td className="px-6 py-4">
+                    <span className={row.totalCancelled > 0 ? 'text-amber-600 dark:text-amber-400 font-medium' : ''}>
+                      {row.totalCancelled || 0}
+                    </span>
+                  </td>
                   <td className="px-6 py-4">${Number(row.totalRevenue || 0).toLocaleString('es-CO')}</td>
-                  <td className="px-6 py-4">{row.productId || 'N/A'}</td>
-                  <td className="px-6 py-4">{row.productName || 'N/A'}</td>
-                  <td className="px-6 py-4">{row.quantity || 0}</td>
+                  <td className="px-6 py-4">
+                    <span className={row.lostRevenue > 0 ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
+                      ${Number(row.lostRevenue || 0).toLocaleString('es-CO')}
+                    </span>
+                  </td>
                 </tr>
               ))
             )}
