@@ -2,6 +2,8 @@
  * Utilidades para el módulo de cocina
  */
 
+import { ORDER_STATUS } from '../constants/orderStates';
+
 /**
  * Formatea el tiempo transcurrido desde una fecha
  * @param {string} dateString - Fecha en formato ISO 8601
@@ -29,12 +31,14 @@ export function formatTimeAgo(dateString, t) {
  */
 export function getStatusBadgeColor(status) {
   switch (status) {
-    case 'RECEIVED':
+    case ORDER_STATUS.RECEIVED:
       return 'bg-purple-100 text-purple-800';
-    case 'PREPARING':
+    case ORDER_STATUS.PREPARING:
       return 'bg-yellow-100 text-yellow-800';
-    case 'READY':
+    case ORDER_STATUS.READY:
       return 'bg-green-100 text-green-800';
+    case ORDER_STATUS.CANCELLED:
+      return 'bg-red-100 text-red-800';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -47,12 +51,14 @@ export function getStatusBadgeColor(status) {
  */
 export function getStatusText(status, t) {
   switch (status) {
-    case 'RECEIVED':
+    case ORDER_STATUS.RECEIVED:
       return t('kitchen.statusReceived');
-    case 'PREPARING':
+    case ORDER_STATUS.PREPARING:
       return t('kitchen.statusPreparing');
-    case 'READY':
+    case ORDER_STATUS.READY:
       return t('kitchen.statusReady');
+    case ORDER_STATUS.CANCELLED:
+      return 'Cancelado';
     default:
       return status;
   }

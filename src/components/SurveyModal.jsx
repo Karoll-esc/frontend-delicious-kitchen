@@ -4,31 +4,35 @@ import StarRating from './StarRating';
 import { getEnvVar } from '../utils/getEnvVar';
 
 /**
- * Modal para enviar reseñas de pedidos
+ * Modal para enviar encuestas de proceso (durante preparación)
+ * HU-013: Sistema de Encuestas de Proceso
  *
  * Props:
  * - isOpen: Boolean para mostrar/ocultar modal
- * - onClose: Callback para cerrar modal
- * - orderData: Objeto con { orderId, orderNumber, customerName, customerEmail }
- * - onSubmit: Callback al enviar reseña exitosamente
+ * - onClose: Callback para cerrar modal (encuesta no obligatoria)
+ * - orderData: Objeto con { orderNumber, customerName, customerEmail }
+ * - onSubmit: Callback opcional al enviar encuesta exitosamente
+ *
+ * Diferencias con ReviewModal:
+ * - Se activa en estados "preparing" o "ready" (no post-entrega)
+ * - Evalúa tiempo de espera y servicio (no comida)
+ * - NO es obligatoria, el cliente puede cerrar sin responder
+ * - No requiere moderación admin
  *
  * Paleta de colores:
  * - Primario: #FF6B35 (naranja vibrante)
  * - Fondo: #F5F5F5, #FFFFFF
  * - Texto: #222222, #666666
- * - Botones: #FF6B35 (activo), #CCCCCC (inactivo)
  */
-export default function ReviewModal({
+export default function SurveyModal({
   isOpen,
   onClose,
   orderData,
   onSubmit
 }) {
   const { t } = useTranslation();
-  const [ratings, setRatings] = useState({
-    overall: 0,
-    food: 0
-  });
+  const [waitTimeRating, setWaitTimeRating] = useState(0);
+  const [serviceRating, setServiceRating] = useState(0);
   const [comment, setComment] = useState('');
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,23 +44,23 @@ export default function ReviewModal({
   const validate = () => {
     const newErrors = {};
 
-    if (!ratings.overall || ratings.overall < 1) {
-      newErrors.overall = t('reviewModal.errors.overallRatingRequired');
+    if (!waitTimeRating || waitTimeRating < 1 || waitTimeRating > 5) {
+      newErrors.waitTime = t('surveyModal.errors.waitTimeRequired');
     }
 
-    if (!ratings.food || ratings.food < 1) {
-      newErrors.food = t('reviewModal.errors.foodQualityRequired');
+    if (!serviceRating || serviceRating < 1 || serviceRating > 5) {
+      newErrors.service = t('surveyModal.errors.serviceRequired');
     }
 
     if (comment && comment.length > 500) {
-      newErrors.comment = t('reviewModal.errors.commentMaxLength');
+      newErrors.comment = t('surveyModal.errors.commentMaxLength');
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Enviar reseña
+  // Enviar encuesta
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -70,35 +74,36 @@ export default function ReviewModal({
     try {
       const API_BASE_URL = getEnvVar('VITE_API_URL');
 
-      // Mapear datos del frontend al formato esperado por el backend
-      const reviewData = {
-        orderNumber: orderData.orderNumber || 'N/A',
-        customerName: orderData.customerName || orderData.customer || 'Anonymous',
+      const surveyData = {
+        orderNumber: orderData.orderNumber,
+        customerName: orderData.customerName || orderData.customer,
         customerEmail: orderData.customerEmail || 'customer@example.com',
-        foodRating: parseInt(ratings.food) || 0,      // ✅ Convertir explícitamente a entero
-        tasteRating: parseInt(ratings.overall) || 0,  // ✅ Convertir explícitamente a entero
+        waitTimeRating,
+        serviceRating,
         comment: comment.trim()
       };
 
-      console.log('📤 Enviando reseña:', reviewData); // Debug
-
-
-
-      const response = await fetch(`${API_BASE_URL}/reviews`, {
+      const response = await fetch(`${API_BASE_URL}/surveys`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(reviewData)
+        body: JSON.stringify(surveyData)
       });
 
       if (!response.ok) {
-        let errorMessage = t('reviewModal.errors.submitFailed');
+        let errorMessage = t('surveyModal.errors.submitFailed');
         try {
           const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
+          // Manejo de errores específicos
+          if (response.status === 409) {
+            errorMessage = t('surveyModal.errors.duplicateSurvey');
+          } else if (response.status === 400) {
+            errorMessage = errorData.message || t('surveyModal.errors.invalidRatings');
+          } else {
+            errorMessage = errorData.message || errorMessage;
+          }
         } catch {
-          // Si no hay JSON, usar mensaje por defecto
           errorMessage = `Server error: ${response.status} ${response.statusText}`;
         }
         throw new Error(errorMessage);
@@ -109,19 +114,17 @@ export default function ReviewModal({
       // Mostrar mensaje de éxito
       setSubmitSuccess(true);
 
-      // Esperar 2 segundos, cerrar modal y redirigir al home
+      // Esperar 2 segundos y cerrar modal (no redirige, el cliente sigue con su pedido)
       setTimeout(() => {
         setSubmitSuccess(false);
         resetForm();
         if (onSubmit) onSubmit(data.data);
         onClose();
-        // Redirigir al home con mensaje de agradecimiento
-        window.location.href = '/';
       }, 2000);
 
     } catch (error) {
-      console.error('Error submitting review:', error);
-      const errorMessage = error.message || t('reviewModal.errors.submitFailedRetry');
+      console.error('Error submitting survey:', error);
+      const errorMessage = error.message || t('surveyModal.errors.submitFailedRetry');
       setErrors({ submit: errorMessage });
     } finally {
       setIsSubmitting(false);
@@ -130,12 +133,13 @@ export default function ReviewModal({
 
   // Resetear formulario
   const resetForm = () => {
-    setRatings({ overall: 0, food: 0 });
+    setWaitTimeRating(0);
+    setServiceRating(0);
     setComment('');
     setErrors({});
   };
 
-  // Cerrar modal
+  // Cerrar modal (la encuesta no es obligatoria)
   const handleClose = () => {
     if (!isSubmitting) {
       resetForm();
@@ -156,17 +160,16 @@ export default function ReviewModal({
               onClick={handleClose}
               disabled={isSubmitting}
               className="flex items-center gap-1 text-white hover:text-[#F5F5F5] transition-colors disabled:opacity-50"
-              aria-label={t('reviewModal.backButton')}
+              aria-label={t('surveyModal.closeButton')}
             >
-              <span className="material-symbols-outlined">arrow_back</span>
-              <span className="font-medium">{t('reviewModal.backButton')}</span>
+              <span className="material-symbols-outlined">close</span>
             </button>
-            <h2 className="text-xl font-bold">{t('reviewModal.title')}</h2>
-            <div className="w-16"></div>
+            <h2 className="text-xl font-bold">{t('surveyModal.title')}</h2>
+            <div className="w-8"></div>
           </div>
           {orderData?.orderNumber && (
             <p className="text-sm text-white/90 mt-2 text-center">
-              {t('reviewModal.orderNumberPrefix')}{orderData.orderNumber}
+              {t('surveyModal.orderNumberPrefix')}{orderData.orderNumber}
             </p>
           )}
         </div>
@@ -182,59 +185,61 @@ export default function ReviewModal({
               </div>
             </div>
             <h3 className="text-2xl font-bold text-[#222222] mb-2">
-              {t('reviewModal.thankYouTitle')}
+              {t('surveyModal.thankYouTitle')}
             </h3>
-            <p className="text-[#666666] mb-1">
-              {t('reviewModal.successMessage')}
-            </p>
-            <p className="text-sm text-[#999999]">
-              {t('reviewModal.redirectingMessage')}
+            <p className="text-[#666666]">
+              {t('surveyModal.successMessage')}
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6">
-            {/* Overall Rating */}
+            {/* Mensaje introductorio */}
+            <p className="text-sm text-[#666666] mb-6 text-center">
+              {t('surveyModal.introMessage')}
+            </p>
+
+            {/* Wait Time Rating */}
             <div className="mb-6">
               <StarRating
-                label={t('reviewModal.overallRatingLabel')}
-                rating={ratings.overall}
-                onChange={(value) => setRatings({ ...ratings, overall: value })}
+                label={t('surveyModal.waitTimeLabel')}
+                rating={waitTimeRating}
+                onChange={(value) => setWaitTimeRating(value)}
                 size="md"
               />
-              {errors.overall && (
-                <p className="text-sm text-red-500 mt-1">{errors.overall}</p>
+              {errors.waitTime && (
+                <p className="text-sm text-red-500 mt-1">{errors.waitTime}</p>
               )}
             </div>
 
-            {/* Food Quality */}
+            {/* Service Rating */}
             <div className="mb-6">
               <StarRating
-                label={t('reviewModal.foodQualityLabel')}
-                rating={ratings.food}
-                onChange={(value) => setRatings({ ...ratings, food: value })}
+                label={t('surveyModal.serviceLabel')}
+                rating={serviceRating}
+                onChange={(value) => setServiceRating(value)}
                 size="md"
               />
-              {errors.food && (
-                <p className="text-sm text-red-500 mt-1">{errors.food}</p>
+              {errors.service && (
+                <p className="text-sm text-red-500 mt-1">{errors.service}</p>
               )}
             </div>
 
             {/* Comment (Optional) */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-[#222222] mb-2">
-                {t('reviewModal.commentsLabel')}
+                {t('surveyModal.commentsLabel')}
               </label>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder={t('reviewModal.commentsPlaceholder')}
+                placeholder={t('surveyModal.commentsPlaceholder')}
                 maxLength={500}
-                rows={4}
+                rows={3}
                 className="w-full px-4 py-3 border border-[#CCCCCC] rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent text-[#222222] placeholder-[#CCCCCC]"
               />
               <div className="flex justify-between items-center mt-1">
                 <p className={`text-xs ${remainingChars < 50 ? 'text-[#FF6B35]' : 'text-[#666666]'}`}>
-                  {remainingChars} {t('reviewModal.charactersRemaining')}
+                  {remainingChars} {t('surveyModal.charactersRemaining')}
                 </p>
                 {errors.comment && (
                   <p className="text-xs text-red-500">{errors.comment}</p>
@@ -257,7 +262,7 @@ export default function ReviewModal({
                 disabled={isSubmitting}
                 className="flex-1 px-4 py-3 bg-[#F5F5F5] text-[#666666] font-semibold rounded-lg hover:bg-[#CCCCCC] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t('reviewModal.cancelButton')}
+                {t('surveyModal.skipButton')}
               </button>
               <button
                 type="submit"
@@ -267,10 +272,10 @@ export default function ReviewModal({
                 {isSubmitting ? (
                   <>
                     <span className="animate-spin">⏳</span>
-                    {t('reviewModal.submittingButton')}
+                    {t('surveyModal.submittingButton')}
                   </>
                 ) : (
-                  t('reviewModal.submitButton')
+                  t('surveyModal.submitButton')
                 )}
               </button>
             </div>

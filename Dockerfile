@@ -20,4 +20,3 @@ EXPOSE 5173
 
 # Comando para desarrollo (en producción usar npm run build)
 CMD ["npm", "run", "dev", "--", "--host"]
-

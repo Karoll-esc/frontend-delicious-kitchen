@@ -11,6 +11,10 @@ export function getEnvVar(key) {
   if (typeof process !== 'undefined' && process.env[key] !== undefined) {
     return process.env[key];
   }
-  // Valor por defecto en pruebas y Node: nunca usar import.meta.env
+  // Si estamos en el navegador con Vite, usar import.meta.env
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return import.meta.env[key];
+  }
+  // Valor por defecto
   return undefined;
 }

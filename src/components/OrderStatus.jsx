@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../hooks/useNotification';
 import NotificationModal from './NotificationModal';
 import OrderCancelModal from './OrderCancelModal';
+import { ORDER_STATUS, isCustomerCancellable, isFinalState } from '../constants/orderStates';
 
 /**
  * Componente para mostrar el estado de un pedido específico
@@ -95,11 +96,11 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
   useNotifications(handleNotification, []);
 
   // --- Acciones de UI ---
-  const handleCancelOrder = useCallback(async () => {
+  const handleCancelOrder = useCallback(async (reason) => {
     setCancelError('');
     setIsCancelling(true);
     try {
-      const updatedOrder = await cancelOrder(orderId);
+      const updatedOrder = await cancelOrder(orderId, reason);
       setOrder(updatedOrder);
       setCancelModal(false);
       setPreparingModal(false);
@@ -133,9 +134,9 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
   // --- Memoización de datos derivados ---
   const displayOrderId = useMemo(() => order?.orderNumber || order?.orderId || order?._id || 'N/A', [order]);
   const customerName = useMemo(() => order?.customerName || order?.customer || 'Customer', [order]);
-  const isBeingPrepared = useMemo(() => ['cooking', 'ready', 'delivered'].includes(order?.status), [order]);
-  const isReadyForPickup = useMemo(() => ['ready', 'delivered'].includes(order?.status), [order]);
-  const isCancelled = order?.status === 'cancelled';
+  const isBeingPrepared = useMemo(() => [ORDER_STATUS.PREPARING, ORDER_STATUS.READY, ORDER_STATUS.COMPLETED].includes(order?.status), [order]);
+  const isReadyForPickup = useMemo(() => [ORDER_STATUS.READY, ORDER_STATUS.COMPLETED].includes(order?.status), [order]);
+  const isCancelled = order?.status === ORDER_STATUS.CANCELLED;
 
   // --- Renderizado condicional ---
   if (loading) {
@@ -208,7 +209,7 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
             <div className="flex flex-col items-center gap-2 text-center">
               <div className={`relative flex h-10 w-10 items-center justify-center rounded-full ${isBeingPrepared ? 'bg-primary text-white' : 'bg-border-light dark:bg-border-dark text-subtext-light dark:text-subtext-dark'}`}>
                 <span className="material-symbols-outlined">{isReadyForPickup ? 'check' : 'soup_kitchen'}</span>
-                {(order.status === 'cooking' || order.status === 'preparing') && (
+                {order.status === ORDER_STATUS.PREPARING && (
                   <div className="absolute h-full w-full animate-ping rounded-full bg-primary opacity-50"></div>
                 )}
               </div>
@@ -269,12 +270,13 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
         </div>
       )}
 
-      {/* Botón Cancelar Pedido - Solo si está pending */}
-      {order.status === 'pending' && !isCancelled && (
+      {/* Botón Cancelar Pedido - Solo si es cancelable por cliente */}
+      {isCustomerCancellable(order.status) && !isCancelled && (
         <div className="mt-6 flex justify-center">
           <button
             onClick={() => setCancelModal(true)}
             disabled={isCancelling}
+            aria-label={t('orderStatus.cancelOrderAriaLabel')}
             className="px-6 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
             {isCancelling ? t('orderStatus.cancelling') : t('orderStatus.cancelOrder')}
@@ -282,13 +284,13 @@ function OrderStatus({ onOrderLoad, onRefreshRequest, onOpenReviewModal }) {
         </div>
       )}
 
-      {/* Mensaje informativo para otros estados */}
-      {order.status !== 'pending' && !isCancelled && (
+      {/* Mensaje informativo para estados no cancelables */}
+      {!isCustomerCancellable(order.status) && !isCancelled && (
         <div className="mt-6 flex justify-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {order.status === 'cooking' ? t('orderStatus.infoPreparing') : ''}
-            {order.status === 'ready' ? t('orderStatus.infoReady') : ''}
-            {order.status === 'delivered' ? t('orderStatus.infoDelivered') : ''}
+          <p className="text-sm text-yellow-600 dark:text-yellow-600 text-center max-w-md">
+            {order.status === ORDER_STATUS.PREPARING && t('orderStatus.cannotCancelPreparing')}
+            {order.status === ORDER_STATUS.READY && t('orderStatus.cannotCancelReady')}
+            {order.status === ORDER_STATUS.COMPLETED && t('orderStatus.cannotCancelCompleted')}
           </p>
         </div>
       )}

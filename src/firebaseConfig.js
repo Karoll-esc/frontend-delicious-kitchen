@@ -5,19 +5,22 @@ import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+/**
+ * Configuración de Firebase desde variables de entorno
+ * Todas las credenciales deben estar definidas en el archivo .env
+ * @see .env.example para la plantilla de configuración
+ */
 const firebaseConfig = {
-  apiKey: "AIzaSyB8W2KLVHZot4zP9_1fmgEs5E_ne1HXMos",
-  authDomain: "restaurant-e4c24.firebaseapp.com",
-  projectId: "restaurant-e4c24",
-  storageBucket: "restaurant-e4c24.firebasestorage.app",
-  messagingSenderId: "1052527169070",
-  appId: "1:1052527169070:web:cbc682c4d4703496a2d9bf",
-  measurementId: "G-FG953XJB2X"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+export const analytics = getAnalytics(app);
 export const auth = getAuth(app);

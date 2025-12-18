@@ -1,19 +1,21 @@
 
 
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../../context/AuthContext.jsx';
 
 /**
  * Componente de navegación lateral (Sidebar)
- * Muestra menú de navegación principal de la aplicación
+ * Muestra menú de navegación principal de la aplicación con logout seguro
  */
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, i18n } = useTranslation();
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const handleLanguageChange = (e) => {
     i18n.changeLanguage(e.target.value);
     // Forzar re-render de la página actual para que el contenido cambie de idioma inmediatamente
@@ -23,13 +25,44 @@ function Sidebar() {
     navigate(location.pathname, { replace: true });
   };
 
+  /**
+   * Maneja el cierre de sesión seguro del usuario (HU-005).
+   * 
+   * Acciones ejecutadas:
+   * 1. Muestra estado de carga con mensaje internacionalizado
+   * 2. Ejecuta logout del AuthContext (Firebase + localStorage)
+   * 3. Redirige a /login después de logout exitoso
+   * 4. Muestra error internacionalizado si falla
+   * 
+   * Casos de prueba cubiertos:
+   * - TC-005-P01: Logout exitoso desde interfaz
+   * - TC-005-P02: Sincronización con otras pestañas (via AuthContext)
+   * - TC-005-B01: Logout con token expirado
+   */
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      // El AuthContext limpiará el estado automáticamente via onAuthStateChanged
+      // Otras pestañas detectarán el cambio via storage event
+      navigate('/login');
+    } catch (error) {
+      console.error(t('auth.logoutError'), error);
+      // Mostrar error en interfaz (placeholder para toast/notification system)
+      alert(t('auth.logoutError'));
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   // Define allowed menu items by role
   const role = (user?.role || '').toUpperCase();
   let menuItems = [
     { path: '/users', icon: 'person', label: t('sidebar.userManagement'), filled: false, roles: ['ADMIN'] },
     { path: '/kitchen', icon: 'soup_kitchen', label: t('sidebar.kitchen'), filled: false, roles: ['ADMIN', 'KITCHEN'] },
     { path: '/dashboard/analytics', icon: 'analytics', label: t('sidebar.reports'), filled: true, roles: ['ADMIN'] },
-    { path: '/admin/reviews', icon: 'reviews', label: t('sidebar.reviewManagement'), filled: false, roles: ['ADMIN'] }
+    { path: '/admin/reviews', icon: 'reviews', label: t('sidebar.reviewManagement'), filled: false, roles: ['ADMIN'] },
+    { path: '/admin/surveys', icon: 'rate_review', label: t('sidebar.surveyManagement'), filled: false, roles: ['ADMIN'] }
   ];
 
   // Only show items allowed for the current role
@@ -100,11 +133,14 @@ function Sidebar() {
             </select>
           </button>
           <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-3 px-3 py-2 text-[#111813] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="flex items-center gap-3 px-3 py-2 text-[#111813] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined text-2xl">logout</span>
-            <p className="text-sm font-medium leading-normal">Logout</p>
+            <p className="text-sm font-medium leading-normal">
+              {isLoggingOut ? t('auth.loggingOut') : t('auth.logout')}
+            </p>
           </button>
         </div>
       </div>

@@ -1,33 +1,14 @@
 /**
  * Servicio API para comunicación con el backend
- * Base URL: http://localhost:3000 (API Gateway)
+ * Base URL configurada mediante VITE_API_URL en .env
+ * Utiliza authenticatedFetch para incluir tokens de Firebase automáticamente
  */
 
 import { getEnvVar } from '../utils/getEnvVar';
-const API_BASE_URL = getEnvVar('VITE_API_URL') || 'http://localhost:3000';
+import { normalizeOrderStatus } from '../constants/orderStates';
+import { authenticatedFetch } from '../utils/authenticatedFetch';
 
-/**
- * Mapea los estados del backend a los estados del frontend
- * @param {string} status - Estado del backend (PENDING, PREPARING, READY, DELIVERED, CANCELLED)
- * @returns {string} Estado del frontend (pending, cooking, ready, delivered, cancelled)
- */
-function mapOrderStatus(status) {
-  const statusMap = {
-    'PENDING': 'pending',
-    'PREPARING': 'cooking',
-    'READY': 'ready',
-    'DELIVERED': 'delivered',
-    'CANCELLED': 'cancelled',
-    // También aceptar estados en minúsculas por si acaso
-    'pending': 'pending',
-    'preparing': 'cooking',
-    'cooking': 'cooking',
-    'ready': 'ready',
-    'delivered': 'delivered',
-    'cancelled': 'cancelled'
-  };
-  return statusMap[status?.toUpperCase()] || status || 'pending';
-}
+const API_BASE_URL = getEnvVar('VITE_API_URL');
 
 /**
  * Normaliza los datos del pedido del backend al formato esperado por el frontend
@@ -46,7 +27,7 @@ function normalizeOrderData(orderData) {
     customer: order.customerName || order.customer,
     customerName: order.customerName || order.customer,
     customerEmail: order.customerEmail,
-    status: mapOrderStatus(order.status),
+    status: normalizeOrderStatus(order.status),
     items: order.items || [],
     total: order.total || 0,
     notes: order.notes,
@@ -56,7 +37,7 @@ function normalizeOrderData(orderData) {
 }
 
 /**
- * Obtiene el estado de un pedido específico
+ * Obtiene el estado de un pedido específico (PÚBLICA - sin autenticación)
  * @param {string} orderId - ID del pedido
  * @returns {Promise<Object>} Datos del pedido normalizados
  */
@@ -94,11 +75,8 @@ export async function getKitchenOrders(status) {
 
 
 
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -110,7 +88,7 @@ export async function getKitchenOrders(status) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
 
@@ -175,11 +153,8 @@ export async function getKitchenOrders(status) {
 export async function getKitchenOrder(orderId) {
   try {
     const url = `${API_BASE_URL}/kitchen/orders/${orderId}`;
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -190,7 +165,7 @@ export async function getKitchenOrder(orderId) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
 
@@ -228,11 +203,8 @@ export async function getKitchenOrder(orderId) {
 export async function startPreparingOrder(orderId) {
   try {
     const url = `${API_BASE_URL}/kitchen/orders/${orderId}/start-preparing`;
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -243,7 +215,7 @@ export async function startPreparingOrder(orderId) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
 
@@ -281,11 +253,8 @@ export async function startPreparingOrder(orderId) {
 export async function markOrderAsReady(orderId) {
   try {
     const url = `${API_BASE_URL}/kitchen/orders/${orderId}/ready`;
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -296,7 +265,7 @@ export async function markOrderAsReady(orderId) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
 
@@ -358,7 +327,29 @@ export async function createOrder(orderData) {
     });
 
     if (!response.ok) {
-      throw new Error(`Error al crear el pedido: ${response.statusText}`);
+      // Intentar obtener el mensaje de error del backend
+      let errorMessage = `Error al crear el pedido: ${response.statusText}`;
+      
+      // Verificar si hay contenido en la respuesta antes de parsear
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          const text = await response.text();
+          if (text) {
+            const errorData = JSON.parse(text);
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            } else if (errorData.error) {
+              errorMessage = errorData.error;
+            }
+          }
+        } catch (parseError) {
+          // Si no se puede parsear el JSON, usar el statusText
+          console.warn('No se pudo parsear la respuesta de error:', parseError);
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
@@ -373,9 +364,10 @@ export async function createOrder(orderData) {
 /**
  * Cancela un pedido específico
  * @param {string} orderId - ID del pedido a cancelar
+ * @param {string} reason - Motivo de cancelación (opcional)
  * @returns {Promise<Object>} Datos del pedido actualizado
  */
-export async function cancelOrder(orderId) {
+export async function cancelOrder(orderId, reason = 'Cancelado por el cliente') {
   try {
     const url = `${API_BASE_URL}/orders/${orderId}/cancel`;
     const response = await fetch(url, {
@@ -383,6 +375,10 @@ export async function cancelOrder(orderId) {
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        reason,
+        cancelledBy: 'customer'
+      })
     });
 
     if (!response.ok) {
@@ -393,7 +389,7 @@ export async function cancelOrder(orderId) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
       
@@ -426,12 +422,13 @@ export async function cancelOrder(orderId) {
 // ==================== REVIEW API FUNCTIONS ====================
 
 /**
- * Crea una nueva reseña para un pedido
+ * Crea una nueva reseña (HU-014: Sistema de Reseñas Públicas)
  * @param {Object} reviewData - Datos de la reseña
- * @param {string} reviewData.orderId - ID del pedido (requerido)
+ * @param {string} [reviewData.orderNumber] - Número de pedido (OPCIONAL, puede ser "N/A")
  * @param {string} reviewData.customerName - Nombre del cliente (requerido)
- * @param {number} reviewData.overallRating - Calificación general 1-5 (requerido)
+ * @param {string} reviewData.customerEmail - Email del cliente (requerido)
  * @param {number} reviewData.foodRating - Calificación de comida 1-5 (requerido)
+ * @param {number} reviewData.tasteRating - Calificación de sabor 1-5 (requerido)
  * @param {string} [reviewData.comment] - Comentario opcional (max 500 chars)
  * @returns {Promise<Object>} Datos de la reseña creada
  */
@@ -490,19 +487,17 @@ export async function getPublicReviews(page = 1, limit = 10) {
 
 /**
  * Obtiene todas las reseñas (admin) con paginación
+ * PROTEGIDA - Requiere autenticación admin
  * @param {number} [page=1] - Número de página
  * @param {number} [limit=50] - Cantidad de reseñas por página
  * @returns {Promise<Object>} { reviews: [...], total: number, page: number }
  */
 export async function getAllReviews(page = 1, limit = 50) {
   try {
-    const response = await fetch(
+    const response = await authenticatedFetch(
       `${API_BASE_URL}/reviews/admin/reviews?page=${page}&limit=${limit}`,
       {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
       }
     );
 
@@ -546,13 +541,14 @@ export async function getReviewById(reviewId) {
 
 /**
  * Actualiza el estado de una reseña (admin)
+ * PROTEGIDA - Requiere autenticación admin
  * @param {string} reviewId - ID de la reseña
  * @param {string} status - Nuevo estado: 'approved', 'hidden', 'pending'
  * @returns {Promise<Object>} Datos de la reseña actualizada
  */
 export async function updateReviewStatus(reviewId, status) {
   try {
-    const response = await fetch(
+    const response = await authenticatedFetch(
       `${API_BASE_URL}/reviews/${reviewId}/status`,
       {
         method: 'PATCH',
@@ -578,6 +574,7 @@ export async function updateReviewStatus(reviewId, status) {
 
 /**
  * Obtiene las analíticas de ventas
+ * PROTEGIDA - Requiere autenticación admin
  * @param {Object} filters - Filtros para las analíticas
  * @param {string} filters.from - Fecha inicial (YYYY-MM-DD)
  * @param {string} filters.to - Fecha final (YYYY-MM-DD)
@@ -599,11 +596,8 @@ export async function getAnalytics(filters) {
 
     const url = `${API_BASE_URL}/admin/analytics?${params.toString()}`;
     
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -626,7 +620,7 @@ export async function getAnalytics(filters) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
       
@@ -635,8 +629,38 @@ export async function getAnalytics(filters) {
       throw error;
     }
 
-    const data = await response.json();
-    return data;
+    // Verificar si hay contenido antes de parsear JSON
+    const contentLength = response.headers.get('content-length');
+    if (contentLength === '0' || response.status === 204) {
+      return {
+        message: 'No hay datos disponibles para el período seleccionado',
+        range: { from: filters.from, to: filters.to, groupBy: filters.groupBy },
+        summary: { totalOrders: 0, totalRevenue: 0, avgPrepTime: null },
+        series: [],
+        productsSold: [],
+        topNProducts: []
+      };
+    }
+
+    const text = await response.text();
+    if (!text || text.trim() === '') {
+      return {
+        message: 'No hay datos disponibles para el período seleccionado',
+        range: { from: filters.from, to: filters.to, groupBy: filters.groupBy },
+        summary: { totalOrders: 0, totalRevenue: 0, avgPrepTime: null },
+        series: [],
+        productsSold: [],
+        topNProducts: []
+      };
+    }
+
+    try {
+      const data = JSON.parse(text);
+      return data;
+    } catch (parseError) {
+      console.error('Error parseando JSON de analytics:', text);
+      throw new Error('Respuesta inválida del servidor. Por favor, intenta nuevamente.');
+    }
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
       const networkError = new Error(
@@ -653,6 +677,7 @@ export async function getAnalytics(filters) {
 
 /**
  * Exporta las analíticas a CSV
+ * PROTEGIDA - Requiere autenticación admin
  * @param {Object} params - Parámetros para exportación
  * @param {string} params.from - Fecha inicial (YYYY-MM-DD)
  * @param {string} params.to - Fecha final (YYYY-MM-DD)
@@ -677,7 +702,7 @@ export async function exportAnalyticsCSV(params) {
       body.columns = params.columns;
     }
 
-    const response = await fetch(`${API_BASE_URL}/admin/analytics/export`, {
+    const response = await authenticatedFetch(`${API_BASE_URL}/admin/analytics/export`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -693,7 +718,7 @@ export async function exportAnalyticsCSV(params) {
         if (errorData.message) {
           errorMessage = errorData.message;
         }
-      } catch (e) {
+      } catch {
         // Si no se puede parsear JSON, usar el statusText
       }
       
@@ -732,6 +757,102 @@ export async function exportAnalyticsCSV(params) {
     }
     
     console.error('Error en exportAnalyticsCSV:', error);
+    throw error;
+  }
+}
+
+// ==================== SURVEYS (HU-013) ====================
+
+/**
+ * Obtiene todas las encuestas de proceso (admin)
+ * Endpoint protegido que requiere autenticación Firebase y rol Admin
+ * 
+ * @param {number} [page=1] - Número de página
+ * @param {number} [limit=20] - Cantidad de encuestas por página
+ * @returns {Promise<Object>} { surveys: [...], total: number, page: number, totalPages: number }
+ */
+export async function getAllSurveys(page = 1, limit = 20) {
+  try {
+    const response = await authenticatedFetch(
+      `${API_BASE_URL}/surveys?page=${page}&limit=${limit}`,
+      {
+        method: 'GET',
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener las encuestas: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error en getAllSurveys:', error);
+    throw error;
+  }
+}
+
+/**
+ * Verifica si existe una encuesta para un pedido específico
+ * Endpoint público
+ * 
+ * @param {string} orderNumber - Número de pedido
+ * @returns {Promise<Object>} { success: boolean, hasSurvey: boolean }
+ */
+export async function checkSurveyExists(orderNumber) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/surveys/check/${orderNumber}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al verificar encuesta: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error en checkSurveyExists:', error);
+    throw error;
+  }
+}
+
+/**
+ * Crea una nueva encuesta de proceso
+ * Endpoint público (cliente durante preparación/ready)
+ * 
+ * @param {Object} surveyData - Datos de la encuesta
+ * @param {string} surveyData.orderNumber - Número de pedido
+ * @param {string} surveyData.customerName - Nombre del cliente
+ * @param {string} surveyData.customerEmail - Email del cliente
+ * @param {number} surveyData.waitTimeRating - Calificación tiempo de espera (1-5)
+ * @param {number} surveyData.serviceRating - Calificación servicio (1-5)
+ * @param {string} [surveyData.comment] - Comentario opcional
+ * @returns {Promise<Object>} { success: boolean, message: string, data: Survey }
+ */
+export async function createSurvey(surveyData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/surveys`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(surveyData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const error = new Error(data.message || 'Error al crear la encuesta');
+      error.status = response.status;
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error en createSurvey:', error);
     throw error;
   }
 }

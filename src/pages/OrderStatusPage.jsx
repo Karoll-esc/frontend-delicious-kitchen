@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import OrderStatus from '../components/OrderStatus';
 import ReviewModal from '../components/ReviewModal';
+import SurveyModal from '../components/SurveyModal';
 
 /**
  * Página para ver el estado de un pedido específico
@@ -15,6 +16,56 @@ function OrderStatusPage() {
   const [orderData, setOrderData] = useState(null);
   const [refreshFunction, setRefreshFunction] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showSurveyModal, setShowSurveyModal] = useState(false);
+  const [hasSurvey, setHasSurvey] = useState(false);
+
+  // Estados válidos para mostrar la encuesta de proceso
+  const SURVEY_VALID_STATES = ['preparing', 'ready'];
+
+  /**
+   * Verifica si ya existe una encuesta para el pedido actual
+   * Se ejecuta cuando cambia el orderData
+   */
+  const checkSurveyExists = useCallback(async (orderNumber) => {
+    if (!orderNumber) return;
+    
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_BASE_URL}/surveys/check/${orderNumber}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setHasSurvey(data.hasSurvey);
+      }
+    } catch (error) {
+      console.error('Error checking survey:', error);
+      // En caso de error, asumimos que no hay encuesta para no bloquear la funcionalidad
+      setHasSurvey(false);
+    }
+  }, []);
+
+  // Verificar si existe encuesta cuando se carga el pedido
+  useEffect(() => {
+    if (orderData?.orderNumber) {
+      checkSurveyExists(orderData.orderNumber);
+    }
+  }, [orderData?.orderNumber, checkSurveyExists]);
+
+  /**
+   * Determina si se debe mostrar el botón de encuesta
+   * Condiciones: estado preparing/ready Y no existe encuesta previa
+   */
+  const canShowSurvey = orderData && 
+    SURVEY_VALID_STATES.includes(orderData.status) && 
+    !hasSurvey;
+
+  /**
+   * Callback cuando se envía la encuesta exitosamente
+   */
+  const handleSurveySubmit = () => {
+    setHasSurvey(true);
+    setShowSurveyModal(false);
+  };
 
   return (
     <div className="relative flex min-h-screen w-full flex-col group/design-root bg-background-light dark:bg-background-dark">
@@ -32,7 +83,7 @@ function OrderStatusPage() {
         </div>
         {/* Título */}
         <h2 className="flex-1 text-center text-lg font-bold leading-tight tracking-[-0.015em] text-text-light dark:text-text-dark">
-          {t('orderStatus.trackOrder', 'Track Order')}
+          {t('orderStatus.trackOrder')}
         </h2>
         {/* Botón cambio de idioma */}
         <div className="flex items-center justify-end w-12 h-12">
@@ -78,6 +129,33 @@ function OrderStatusPage() {
           }}
         />
       )}
+
+      {/* Survey Modal - Encuesta de proceso (no obligatoria) */}
+      {showSurveyModal && orderData && (
+        <SurveyModal
+          key={`survey-${i18n.language}`}
+          isOpen={showSurveyModal}
+          onClose={() => setShowSurveyModal(false)}
+          orderData={{
+            orderNumber: orderData.orderNumber,
+            customerName: orderData.customerName || orderData.customer,
+            customerEmail: orderData.customerEmail || ''
+          }}
+          onSubmit={handleSurveySubmit}
+        />
+      )}
+
+      {/* Floating Survey Button - Solo visible cuando es posible enviar encuesta */}
+      {canShowSurvey && (
+        <button
+          onClick={() => setShowSurveyModal(true)}
+          className="fixed bottom-24 right-4 z-20 flex items-center gap-2 px-4 py-3 bg-[#FF6B35] text-white rounded-full shadow-lg hover:bg-[#FF6B35]/90 transition-all transform hover:scale-105"
+          aria-label={t('surveyModal.openSurvey')}
+        >
+          <span className="material-symbols-outlined">rate_review</span>
+          <span className="font-medium text-sm">{t('surveyModal.giveFeedback')}</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -92,7 +170,7 @@ function OrderStatusFooter({ order, onRefresh }) {
   // Calcular tiempo estimado basado en el estado del pedido
   const calculateEstimatedTime = () => {
     if (!order) {
-      return t('orderStatusFooter.calculating', 'Calculando...');
+      return t('orderStatusFooter.calculating');
     }
 
     const now = new Date();
@@ -110,17 +188,17 @@ function OrderStatusFooter({ order, onRefresh }) {
         estimatedMinutes = Math.max(0, 10 - elapsedMinutes);
         break;
       case 'ready':
-        return t('orderStatus.stepReady', 'Ready for Pickup');
+        return t('orderStatus.stepReady');
       case 'delivered':
-        return t('orderStatusFooter.delivered', 'Delivered');
+        return t('orderStatusFooter.delivered');
       case 'cancelled':
-        return t('orderStatusFooter.cancelled', 'Cancelled');
+        return t('orderStatusFooter.cancelled');
       default:
         estimatedMinutes = 12;
     }
 
     if (estimatedMinutes <= 0) {
-      return t('orderStatusFooter.soon', 'Pronto');
+      return t('orderStatusFooter.soon');
     }
 
     return `${estimatedMinutes} ${t(estimatedMinutes === 1 ? 'orderStatusFooter.minute' : 'orderStatusFooter.minutes')}`;

@@ -6,6 +6,7 @@ import {
   calculateOrderTotal
 } from '../../utils/kitchenUtils';
 import { useTranslation } from 'react-i18next';
+import { ORDER_STATUS } from '../../constants/orderStates';
 
 /**
  * Componente de Tarjeta de Pedido
@@ -89,7 +90,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
           {getStatusText(order.status, t)}
         </span>
 
-        {order.status === 'RECEIVED' && (
+        {order.status === ORDER_STATUS.RECEIVED && (
           <button
             onClick={() => onStartPreparing(order.orderNumber || order.orderId)}
             disabled={isProcessing}
@@ -99,7 +100,7 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
           </button>
         )}
 
-        {order.status === 'PREPARING' && (
+        {order.status === ORDER_STATUS.PREPARING && (
           <button
             onClick={() => onMarkAsReady(order.orderNumber || order.orderId)}
             disabled={isProcessing}
@@ -109,12 +110,21 @@ function OrderCard({ order, isProcessing, onStartPreparing, onMarkAsReady }) {
           </button>
         )}
 
-        {order.status === 'READY' && (
+        {order.status === ORDER_STATUS.READY && (
           <button
             disabled
             className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-300 text-gray-700 rounded-lg text-xs sm:text-sm font-medium cursor-not-allowed whitespace-nowrap"
           >
             {t('kitchen.completed')}
+          </button>
+        )}
+
+        {order.status === ORDER_STATUS.CANCELLED && (
+          <button
+            disabled
+            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-200 text-red-800 rounded-lg text-xs sm:text-sm font-medium cursor-not-allowed whitespace-nowrap"
+          >
+            Cancelado
           </button>
         )}
       </div>

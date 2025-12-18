@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import StarRating from '../components/StarRating';
 import Sidebar from '../components/analytics/Sidebar';
 import { useTranslation } from 'react-i18next';
+import { getAllReviews, updateReviewStatus } from '../services/api';
 
 /**
  * AdminReviewsPage Component
@@ -33,8 +34,6 @@ const AdminReviewsPage = () => {
   const [actionType, setActionType] = useState(null); // 'approve' | 'hide'
   const [processing, setProcessing] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
   useEffect(() => {
     fetchReviews();
   }, []);
@@ -44,13 +43,7 @@ const AdminReviewsPage = () => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/reviews/admin/reviews`);
-
-      if (!response.ok) {
-        throw new Error('Error al cargar las reseñas');
-      }
-
-      const data = await response.json();
+      const data = await getAllReviews(1, 100); // Obtener todas las reseñas
 
       // El backend responde con { success, data: [...reviews], pagination }
       const reviewsList = data.data || data.reviews || [];
@@ -93,20 +86,7 @@ const AdminReviewsPage = () => {
     }
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/reviews/${reviewId}/status`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Error al actualizar la reseña');
-      }
+      await updateReviewStatus(reviewId, newStatus);
 
       // Update local state
       setReviews((prev) =>
